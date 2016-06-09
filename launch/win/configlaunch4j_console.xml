@@ -2,8 +2,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>console</headerType>
-  <jar>/home/pezzatti/wsl/dev/fire/_release_1.21/fireindicesui.jar</jar>
-  <outfile>/home/pezzatti/wsl/dev/fire/_release_1.21/win/fireindicesconsole.exe</outfile>
+  <jar>/home/pezzatti/wsl/dev/fire/fire-calculator/target/scala-2.11/firecalculator-assembly-1.22.jar</jar>
+  <outfile>/home/pezzatti/wsl/dev/fire/fire-calculator/launch/win/firecalculator.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -15,7 +15,7 @@
   <manifest></manifest>
   <icon></icon>
   <classPath>
-    <mainClass>ch.wsl.fireindices.app.ConsoleApp</mainClass>
+    <mainClass>ch.wsl.fireindices.app.LauncherApp</mainClass>
   </classPath>
   <jre>
     <path></path>
