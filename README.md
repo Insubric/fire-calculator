@@ -69,3 +69,8 @@ Following open source libraries have been used:
 The library jar can be compacted using ProGuard, Copyright © 2002-2016 Eric Lafortune, but json logging is then not working. 
 
 
+##Citation
+If you use the fire-calculator software and publish the results based on this software, please cite this software with:
+- Swiss Federal Institute for Forest, Snow and Landscape Research WSL, 2016, Fire-calculator v1.22, https://github.com/Insubric/fire-calculator.
+
+
