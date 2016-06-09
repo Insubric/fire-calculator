@@ -1,0 +1,194 @@
+Fire Weather Index Calculator
+
+- version 1.22 (09.06.2016)
+	* upgraded to scala 2.11.8
+	* new sbt multiproject, including fireindiceslib and fireindicesui
+	* new launcher in root project (if no arguments gui is launched, otherwise console)
+        * changed XsnowcoverStart and XsnowcoverEnd to 01.01, in order to have no snowcover as a default
+
+- version 1.21 (16.02.2016)
+	* added implementation of IREPI (included variables for radiation Rs, Ra, ...)
+	* implemented log reporting in case classes so that it can be written in Json format
+	* added option in command line to produce also a log in Json format (default in gui)
+	* added option in command line to to retrieve variable information in Json format
+
+- version 1.20 (20.01.2016)
+	* added implementation of Risico (also Slope and Aspect parameters)
+	* added basic support for sub-daily time steps (time step is not checked!)
+	* added option in command line and GUI app to calculate only Risico indices
+		(for sub-daily time steps)
+
+- version 1.12 (13.01.2016)
+	* changed code of DMC to get identical results of R-package cffdrs 
+          and to Fortran code (1985) (approximation problems) (eq. 12 and 15)
+	* corrected error in BUI (eq. 27b)
+	* added FWI, BUI, DMC and DC versions for latitudes smaller than 30 degrees
+	  (according to R-package cffdrs)
+
+- version 1.11 (2015)
+	* moved debugging to scala-logging
+
+- version 1.10 (15.7.2015)
+	* updated to scala 2.11.7
+	* changed proguard plugin to sbt-proguard
+
+- version 1.9 (02.12.2014)
+	* updated to scala 2.11.4
+
+- version 1.8 (30.08.2014)
+	* updated to scala 2.11.2
+
+- version 1.7 (18.07.2014)
+    * updated to scala 2.11.1
+    * stripped off DangerScale
+
+- version 1.06 (06.05.2014)
+    * corrected some bugs in SimpleApp4CSV
+    * rewrote the printFile method to write the csv
+    * corrected bug in calulation of Munger and FFMC in case of prev value Null
+
+- version 1.05 (17,04.2014)
+    * modified SimpleApp4CSV to extend SimpleApp4DB
+
+- version 1.04 (13.2.2014)
+    * corrected bug in calculation of Sharples index (wrong units)
+
+- version 1.03 (14.1.2014)
+    * eliminated Tmax from variableChooser of  Tdew12, Tdew13, Nesterov, pM68, pM68dwd, FFDI, FFMC, DMC, DC (FWI, BUI, ISI, Ifa) since makes no sense when e.g. also H is in the formula
+
+- version 1.0x
+    * added DangerScale class, to calculate danger sclae based on fire history
+    * added a SimpleApp working on recordsets instead of csv files
+    * upgrade to scala 10.3
+
+- version 0.98 (09.06.2012)
+	* upgrade libraries: scala 2.9.2, argot 0.4
+	* fixed bug in KBDI initialization (KBDISI was correct)  (consequently also FFWImod values were buggy)
+
+- version 0.97 (02.03.2012)
+	* upgrade libraries: scala-arm 1.2 , miglayout-swing 4.2, argot 0.3.5
+	* correct input parameters definition for Angstroem Index
+
+- version 0.96 (15.09.2011)
+	* scala version 2.9.1
+	* fixed bug in version 0.95 of console application (csv driver not included in package fireindicesconsole.jar)
+	
+- version 0.95 (19.08.2011)
+	* allows calculation of Heat Index I also with incomplete T dataseries 
+		(requires at least 1 value for each month)
+	* allows calculation of MeanAnnualRain also with incomplete P dataseries 
+		(requires no more then 20% missing P data)
+	* uses Allen formula (1990) for the computation of dewpoint temperature Tdew
+	* computes also the danger classes for the Orieux index (from r and U): OrieuxDanger [0,1,2,3]
+	* computes also the danger classes for the Baumgartner index (from Baumgartner and month): BaumgartnerDanger [1,2,3,4,5]
+	* scala version 2.9.0.1
+
+- version 0.94 (27.01.2011)
+	* corrected bug for date selection (in versions since 0.9)
+	* corrected bug that set 01-Jan as invalid date for annual variables
+	
+- version 0.93 (22.12.2010)
+	* corrected bug for calculation of FWI (for BUI>80)
+	
+- version 0.92 (20.12.2010)
+	* corrected bug for which when T12=0 the FFMC was set=null
+		
+- version 0.91 (3.12.2010)
+	* corrected bug for unrecognized columns
+	* unrecognized columns (e.g. NR_FIRES, AREA, .... must be Integer or Double) 
+		are also written to the output file, 
+		after the date columns and before the variables and indices
+	* improved help: added parameters names and specifications for *_PAR.txt files
+
+- version 0.9 (15.10.2010)
+	* added command line application (this allows the creation of scripts, where parameters can be specified as a command line option)
+	* added option to import parameters form a file (*_PAR.txt) (see Preferences tab)
+	* improved processing of multiple files (can also only perform checks,
+	  common log can be saved and is more complete)
+	* correct handling of "NA"
+	* improved methods of SimpleApp
+	* improved API docs
+	* scala version 2.8.1
+
+- version 0.8 beta (30.9.2010)
+    * added wsl and alpffirs icons on gui
+	* fixed bug for which data gaps at the end of the dataset were not found
+	* data in non-numeric format are now handled as missing data, and are listed in the gaps list during the check procedure
+	* created variable and functions for 
+		lastRainsSum_2_20, which calculate the last rain sum only in the past 20 days, 
+			and considers a rainy day only if rainfall > 2 mm (Finkele 2006)
+		AgeRainEvent_2_20, which calculate the age (in days) of the last rain event 
+		(in the past 20 days, a rainy event only if rainfall > 2 mm). It selects 
+		the day with the maximum rainfall within the event (Finkele 2006)
+	* updated DFgriffith and DFgriffithAdj to be calculated with lastRainsSum_2_20 and ageRainEvent_2_20
+
+- version 0.7 beta (27.8.2010)
+        *renamed SumPrevRain to RainSum
+        *added input variables Hmin. Hmax, PDur (durtion of rainfall [h]), Cc (Cloud cover fraction [ratio])
+	*created variables and functions for 
+	  VPD13 vapour pressure deficit (used now by pM68), lastRainSum, Tdew12,
+          DFnoble drought factor according to Noble 1980 ,
+          DFgriffith drought factor according to Griffith 1999 ,
+          DFgriffithAdj drought factor according to Finkele 2006 (intermediate step for FFDI),
+	  EMC equilibrium moisture content(intermediate step for FFWI), 
+	  EMCfa equilibrium moisture content  at the fuel-atmosphere interface (intermediate step for MC1 and MC10), 
+          EMC24  weighted 24-hour average equilibrium moisture content(intermediate step for MC100 and MC1000), 
+	  FFWImod (modified Fosberg index),
+	  PETthorn (potential evapotranspiration after Thorntwaite), 
+          PETthorn_camargo (with modification of Camargo et al 1999), 
+	  PETthorn_pereira (with modification of Pereira and Pruitt 2004),
+	  I heat index (intermediate step for PETthorn), 
+	  r index (Orieux index - soil water reserve),
+	  rs  (surface soil water reserve - Carrega),
+          I87 index (Carrega 1988),
+	  RN numerical risk index (Sol 1990),
+	  MC1 1-hour timelag fuel moisture,
+	  MC1 10-hour timelag fuel moisture,
+	  MC1 100-hour timelag fuel moisture,
+	  MC1 1000-hour timelag fuel moisture,
+	  Ifa (Portuguese index)
+	*bug fixes FFDI
+	*output list of variables is now ordered (also in log file)
+	*in the help section are displayed also the required variables for the calculation of the indices
+         and the tables are aligned
+
+- version 0.6 beta (12.8.2010)
+	*bug fixes NetRad (PETpen), M68,FFDI indices
+	*calculation of Nesterov using Tdew15
+	*addition of DWD versions of M68 (pM68dwd, M68dwd)
+
+- version 0.5 beta (23.07.2010)
+	*bug fixes KBDI,KBDISI and Nesterov indices
+
+- version 0.4 beta (22.07.2010)
+	*bug fixes in FWI canadian index ans sub-indices. Do not take latitue setting no more.
+
+- version 0.3 beta (20.07.2010)
+ 	*Added a panel for multi file calculator, now you can pass a group of files and calculate outputs sequentially
+		
+- version 0.2b beta (19-07-2010)
+	* Bug-fix: local regional settings control (',' for decimals) Don't crash anymore
+
+- version 0.2 beta (16.07.2010)
+	* This tool calculate the fire weather indices from a *.csv file containing all inputs necessary to do this
+        * Calculables indices:	- Sharples
+				- Baumgartner
+				- M68
+				- Angstroem
+				- Munger
+				- Nesterov
+				- FFMC (Canadian)
+				- DMC (Canadian)
+				- DC (Canadian)
+				- BUI (Canadian)
+				- ISI (Canadian)
+				- FWI (Canadian)
+				- FMI (Sharples)
+				- Sharples
+				- KBDI
+				- KBDISI
+				- FFWI Fosberg
+				- FFDI (Mac Arthur 5)
+				- PET Potential evapotranspiration (Penmann)
+				- Net radiation
+				
