@@ -26,13 +26,13 @@ In both Windows or Linux you can type e.g.:
 ```
 Note that if you do not specify arguments, the gui version will open.
    
-Alternatively you can in linux you can call the launch/linux/firecalculator.sh bash script:
+Alternatively in linux you can call the launch/linux/firecalculator.sh bash script:
 ```bash
    bash firecalculator.sh --Altitude 300 --fileparam --addparam  -s 20000201 -e 20040101  ./DATA_sample.csv
 ```
 or windows you can use the launch/win/firecalculator.exe:
 ```bash
-   firecalculator.exe --Altitude 300 --fileparam --addparam  -s 20000201 -e 20040101  ./DATA_sample.csv
+   firecalculator.exe --Altitude 300 --fileparam --addparam  -s 20000201 -e 20040101  .\DATA_sample.csv
 ```   
 
 
