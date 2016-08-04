@@ -22,7 +22,7 @@ For the command line version you can use direclty the jar library: open a termin
 and move to the folder containing the jar files (launch/firecalculator.jar). 
 In both Windows or Linux you can type e.g.:
 ```bash
-   java -Xmx512m -Xss10m firecalculator.jar  --Altitude 300 --fileparam  --addparam  -s 20000201 -e 20040101  ./DATA_sample.csv
+   java -Xmx512m -Xss10m -jar firecalculator.jar  --Altitude 300 --fileparam  --addparam  -s 20000201 -e 20040101  ./DATA_sample.csv
 ```
 Note that if you do not specify arguments, the gui version will open.
    
