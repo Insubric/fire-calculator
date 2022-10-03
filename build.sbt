@@ -3,7 +3,7 @@ import Dependencies._
 
 lazy val commonSettings = Seq(
   organization := "ch.wsl",
-  version := "2.00-M1",
+  version := "2.00-M2",
   scalaVersion := "2.13.9"
 )
 

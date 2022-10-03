@@ -109,7 +109,7 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
         conn.close()
         
     }catch{
-        case e:Exception => logger.error("ERROR: opening file connection => " + e.getStackTrace.map(_.toString).mkString("\n"))  
+        case e:Exception => logger.error("ERROR: opening file connection => " + e + "\n"+ e.getStackTrace.map(_.toString).mkString("\n"))
     }
      ""           
   }
@@ -140,7 +140,7 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
       printTable(DsDate, outputTABLE, ",",fileout,true)
 
     }catch{
-      case e:Exception => logger.error("ERROR: DATA OUTPUT FILE=> " + e.getStackTrace.map(_.toString).mkString("\n"))
+      case e:Exception => logger.error("ERROR: DATA OUTPUT FILE=> " + e + "\n"+ e.getStackTrace.map(_.toString).mkString("\n"))
     }finally{
       fileout.close
     }
@@ -184,7 +184,7 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
       printTable(DsDate, outputTABLE, ",",fileout,true)
       
     }catch{
-      case e:Exception => logger.error("ERROR: DATA OUTPUT FILE=> " + e.getStackTrace.map(_.toString).mkString("\n"))
+      case e:Exception => logger.error("ERROR: DATA OUTPUT FILE=> " + e + "\n"+ e.getStackTrace.map(_.toString).mkString("\n"))
     }finally{
       fileout.close
     }
@@ -200,12 +200,14 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
    * @param  Settings Parameter > all parameters needed for calculation
    * @return          report of calculation (for logs)
    */
-  def replaceFile(settings:Parameters, nr2replace: Int, vars:Seq[Serie with Calculable]=null, varsToSkeep:Seq[Serie]=null,
+  def replaceFile(settings:Parameters, nr2replace: Int, vars:Seq[Serie with Calculable]=null, varsToSkip:Seq[Serie]=null,
                   vars2calculate:Seq[Serie with Calculable]=null, report: ReportLog=new ReportLog, printOnlyLast:Boolean = true):File={
+
+    logger.error(vars2calculate.toString())
 
     calculate(settings, report, vars2calculate)
 
-    replace(settings, nr2replace, vars, varsToSkeep, report)
+    replace(settings, nr2replace, vars, varsToSkip, report)
          
     val outFilePath = inputFile.getParent+"/"+inputFile.getName.substring(0, inputFile.getName.length-4)+"_RESULT.csv"
     
@@ -225,7 +227,7 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
       printTable(DsDate, outputTABLE, ",",fileout,true)
 
     }catch{
-      case e:Exception => logger.error("ERROR: DATA OUTPUT FILE=> " + e.getStackTrace.map(_.toString).mkString("\n"))
+      case e:Exception => logger.error("ERROR: DATA OUTPUT FILE=> " + e + "\n"+ e.getStackTrace.map(_.toString).mkString("\n"))
     }finally{
       fileout.close
     }

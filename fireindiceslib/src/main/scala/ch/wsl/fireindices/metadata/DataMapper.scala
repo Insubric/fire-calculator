@@ -21,13 +21,13 @@ class DataMapper(val dc: DataCollection) extends VariablePairs {
     /**
      * return a specific Data from VariableDataMap
      *
-     * @param   key    Variable > the serched variable
+     * @param   key    Variable > the serached variable
      * @return         Data
      */
     def data(key: Variable): Data = {
       get(key) match {
         case None => null
-        case Some(e) => dc(e)
+        case Some(x) => dc(x)
       }
     }
     

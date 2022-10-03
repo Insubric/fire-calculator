@@ -158,7 +158,7 @@ class SimpleApp4DB extends LazyLogging {
       }
     }
     catch{
-      case e:Exception => logger.error("ERROR: while READING INPUT ResultSet => " + e.getStackTrace.map(_.toString).mkString("\n"))
+      case e:Exception => logger.error("ERROR: while READING INPUT ResultSet => " + e + "\n"+ e.getStackTrace.map(_.toString).mkString("\n"))
     }
 
     val listDate = xDATE.toList
@@ -255,6 +255,10 @@ class SimpleApp4DB extends LazyLogging {
         dc.calculate(vars)
 			  
     }catch{
+      case e:Exception => {
+        logger.error("ERROR: while reading headers  => " + e +"\n" + e.getStackTrace.map(_.toString).mkString("\n"))
+        //                            report.append("Problems while reading headers")
+      }
     }
     
     val calcSeries = dc.ordered.filter(y => stillToCalculate.contains(y._1)).values
@@ -283,7 +287,7 @@ class SimpleApp4DB extends LazyLogging {
 			dc.complete(vars)
       
     }catch{
-      case e:Exception => logger.error(e.getStackTrace.map(_.toString).mkString("\n"))
+      case e:Exception => logger.error(e + "\n"+ e.getStackTrace.map(_.toString).mkString("\n"))
     }
 
     val complSeries = dc.ordered.filter(y => stillToComplete.contains(y._1)).filterNot(x => dc.toComplete.contains(x._1)).values
@@ -300,7 +304,7 @@ class SimpleApp4DB extends LazyLogging {
    * @param  Settings Parameter > all parameters needed for calculation
    * @return          report of calculation (for logs)
    */
-  def setToNull(settings:Parameters, nr2replace: Int, vars:Seq[Serie with Calculable]=null, varsToSkeep:Seq[Serie]=null, report: ReportLog=new ReportLog):DataCollection={
+  def setToNull(settings:Parameters, nr2replace: Int, vars:Seq[Serie with Calculable]=null, varsToSkip:Seq[Serie]=null, report: ReportLog=new ReportLog):DataCollection={
 
     dc.removePars
     dc ++= settings
@@ -308,12 +312,15 @@ class SimpleApp4DB extends LazyLogging {
     
     val ix = dc.dateDs.length - nr2replace
 
+
+
     val varsToCalc:Seq[Serie] = {
           if (vars==null) {
-                if (varsToSkeep==null) {
+
+                if (varsToSkip==null) {
                     dc.dss.filter(_._1.isInstanceOf[Calculable]).map(_._1).toSeq
                 }else {
-                    dc.dss.map(_._1).toSeq.diff(varsToSkeep).filter(_.isInstanceOf[Calculable])
+                    dc.dss.map(_._1).toSeq.diff(varsToSkip).filter(_.isInstanceOf[Calculable])
                 }
           } else {
                 vars         
@@ -337,16 +344,16 @@ class SimpleApp4DB extends LazyLogging {
    * @param  Settings Parameter > all parameters needed for calculation
    * @return          report of calculation (for logs)
    */
-  def replace(settings:Parameters, nr2replace: Int, vars:Seq[Serie with Calculable]=null, varsToSkeep:Seq[Serie]=null, report: ReportLog=new ReportLog):DataCollection={
+  def replace(settings:Parameters, nr2replace: Int, vars:Seq[Serie with Calculable]=null, varsToSkip:Seq[Serie]=null, report: ReportLog=new ReportLog):DataCollection={
     
-        setToNull(settings, nr2replace, vars, varsToSkeep, report)
+        setToNull(settings, nr2replace, vars, varsToSkip, report)
         val ix = dc.dateDs.length - nr2replace
         val varsToCalc:Seq[Serie] = {
                 if (vars==null) {
-                      if (varsToSkeep==null) {
+                      if (varsToSkip==null) {
                         dc.dss.filter(_._1.isInstanceOf[Calculable]).map(_._1).toSeq
                        }else{
-                        dc.dss.map(_._1).toSeq.diff(varsToSkeep).filter(_.isInstanceOf[Calculable])
+                        dc.dss.map(_._1).toSeq.diff(varsToSkip).filter(_.isInstanceOf[Calculable])
                        }
                 }else{
                       vars
@@ -354,8 +361,6 @@ class SimpleApp4DB extends LazyLogging {
         }
         val copydc = dc.cloneAll   
         copydc.dss.map(_._2).foreach(x =>  x.values = x.values.take(ix))  //take only until the last complete row
-
-    //    logger,debug(Utils.solarDate2String(copydc.dss.dateDs.getDate(ix)) +"   nrdata "+ copydc.dss(H).length)
 
 
         for (i <- Range(ix, dc.dss.dateDs.length)){
@@ -367,12 +372,13 @@ class SimpleApp4DB extends LazyLogging {
                           ds.values = ds.values:::dc.dss(ds.variable).values(i)::Nil
                   }				
           }
+
           try{
              copydc.complete(varsToCalc.map(_.asInstanceOf[Serie with Calculable]))
     //         copydc.forceComplete()
     //         copydc.complete()
           }catch{
-            case e:Exception => logger.error(e.getStackTrace.map(_.toString).mkString("\n"))
+            case e:Exception => logger.error(e + "\n"+ e.getStackTrace.map(_.toString).mkString("\n"))
           }     
 
         }
@@ -392,14 +398,14 @@ class SimpleApp4DB extends LazyLogging {
 //   * @param  Settings Parameter > all parameters needed for calculation
 //   * @return          report of calculation (for logs)
 //   */
-//  def replaceBoosted(settings:Parameters, nr2replace: Int, varsToSkeep:Seq[Serie]=null, report: StringBuffer=new StringBuffer):DataCollection={
+//  def replaceBoosted(settings:Parameters, nr2replace: Int, varsToSkip:Seq[Serie]=null, report: StringBuffer=new StringBuffer):DataCollection={
 //    
-//        setToNull(settings, nr2replace, varsToSkeep, report)
+//        setToNull(settings, nr2replace, varsToSkip, report)
 //        val ix = dc.dateDs.length - nr2replace
-//        val varsToCalc:Seq[Serie] = if (varsToSkeep==null) {
+//        val varsToCalc:Seq[Serie] = if (varsToSkip==null) {
 //                          dc.dss.filter(_._1.isInstanceOf[Calculable]).map(_._1).toSeq
 //                         }else{
-//                          dc.dss.map(_._1).toSeq.diff(varsToSkeep).filter(_.isInstanceOf[Calculable])
+//                          dc.dss.map(_._1).toSeq.diff(varsToSkip).filter(_.isInstanceOf[Calculable])
 //                         }
 //                      
 //        val copydc = dc.cloneAll   
@@ -418,7 +424,7 @@ class SimpleApp4DB extends LazyLogging {
 //    //         copydc.forceComplete()
 //    //         copydc.complete()
 //          }catch{
-//            case e:Exception => e.printStackTrace
+//            case e:Exception => e + "\n"+ e.printStackTrace
 //          }     
 //
 //        }

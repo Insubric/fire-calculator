@@ -108,7 +108,7 @@ object ConsoleApp extends LazyLogging {
 
   def main(args: Array[String]){    
 
-//        try{
+        try{
           val a = new Conf(args)
 
           if (a.variableinfo()){
@@ -118,12 +118,12 @@ object ConsoleApp extends LazyLogging {
               val ix =  if (a.Risico())
                           Risico_dffm::Risico_WindEffect::Risico_V::Risico_FI::Nil
                         else
-                          a.indices.getOrElse("").split(",").toList.map(Variable.getByAbbrCaseInsensitive(_))
+                          a.indices.getOrElse("").split(",").toList.map(Variable.getByAbbrCaseInsensitive(_)).filterNot(_ ==null)
 
               val mix =  if (a.Risico())
                 Risico_dffm::Risico_WindEffect::Risico_V::Risico_FI::Nil
               else
-                a.calculateMissingIndices.getOrElse("").split(",").toList.map(Variable.getByAbbrCaseInsensitive(_))
+                a.calculateMissingIndices.getOrElse("").split(",").toList.map(Variable.getByAbbrCaseInsensitive(_)).filterNot(_ ==null)
 
               val parameters = new Parameters
 
@@ -174,38 +174,41 @@ object ConsoleApp extends LazyLogging {
                   logger.warn("Both complete and replace options have been specified. Replace option will be ignored.")
 
                 if (!a.nocalc())
-                        if (!a.complete()) {
+                        if (!a.complete() & a.replace()<1) {
 
-                              if (a.replace()<1)    //replace
-                                    if (ix(0)==null) elab.calculateFile(parameters, log)   
-                                    else elab.calculateFile(parameters, log, ix.asInstanceOf[Seq[Variable with Calculable]])
-                              else                                 //complete
-                                    if (ix(0)==null) elab.replaceFile(parameters, a.replace(), null, null, log,  a.onlyLast())
-                                    else elab.replaceFile(parameters, a.replace(), ix.asInstanceOf[Seq[Serie with Calculable]], null, log, a.onlyLast())
+                          if (ix.size==0) elab.calculateFile(parameters, log)
+                          else elab.calculateFile(parameters, log, ix.asInstanceOf[Seq[Variable with Calculable]])
 
-                        }else {   //complete
+                        }else{
 
-//                            if (mix(0) != null)   //calculate missing variables not contained in the file
-//                                elab.calculateFile(parameters, log, mix.asInstanceOf[Seq[Variable with Calculable]])
-                            val vars2calculate = if (mix(0)==null) null else mix.asInstanceOf[Seq[Serie with Calculable]]
+                          val vars2calculate = if (mix.size==0) null else mix.asInstanceOf[Seq[Serie with Calculable]]
 
-                            if (ix(0)==null) elab.completeFile(parameters, log, null , vars2calculate, a.onlyLast())
+                          if (a.complete()) {
+
+                            if (ix.size==0) elab.completeFile(parameters, log, null , vars2calculate, a.onlyLast())
                             else elab.completeFile(parameters, log, ix.asInstanceOf[Seq[Serie with Calculable]], vars2calculate, a.onlyLast())
+
+                          }else{
+                            //replace
+                            if (ix.size==0) elab.replaceFile(parameters, a.replace(), null, vars2calculate, vars2calculate, log,  a.onlyLast())
+                            else elab.replaceFile(parameters, a.replace(), ix.asInstanceOf[Seq[Serie with Calculable]], null, vars2calculate, log, a.onlyLast())
+
+                          }
                         }
 
 
               elab.writeLog(log, true, a.jsonlog())
             } 
 
-//        }catch{
-//            case e: Exception => {
-////                if (variableinfo.value.getOrElse(false)){
-////                  println(Variable.variables.map(_.descJSON).mkString("\n"))
-////                }else{
-//                  logger.error(e.getMessage)
-////                }
-//            }
-//        }
+        }catch{
+            case e: Exception => {
+//                if (variableinfo.value.getOrElse(false)){
+//                  println(Variable.variables.map(_.descJSON).mkString("\n"))
+//                }else{
+                  logger.error(e.getMessage)
+//                }
+            }
+        }
     }
 
 

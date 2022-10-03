@@ -195,7 +195,6 @@ class DataSerie(override val variable:Serie, var start:Long, var interval:Long, 
   def lastDs(nr: Int = 1):DataSerie ={
 //    variable.createDataSerie( start+interval * Math.max(0, length -nr), interval, last(nr), notes)
     variable.createDataSerie( this.getDate(Math.max(0,this.length-nr)), interval, last(nr), log, notes)
-   
   }
   
     /**

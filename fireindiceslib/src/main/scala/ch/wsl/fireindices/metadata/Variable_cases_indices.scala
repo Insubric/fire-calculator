@@ -56,7 +56,7 @@ import scala.collection.mutable.ListBuffer
     in += (H13::H12::H::Nil)
     
     /**
-     * Calculate PETpen DataSerie
+     * Calculate Angstroem DataSerie
      *
      * @param  T       temperature DataSerie
      * @param  H       relative humidity DataSerie
@@ -281,32 +281,32 @@ import scala.collection.mutable.ListBuffer
     }
   }
   case object FFWImod extends Variable("modified FFWI index value","FFWImod","--",-100000,100000, classOf[Double]) with Serie with Calculable{
-    in += (KBDI::Nil)
+    in += (KBDISI::Nil)
     in += (FFWI::Nil)
 
     /**
-     * Calculate modified FFWI index DataSerie
+     * Calculate modified FFWI index DataSerie (implemented with KBDISI)
      *
-     * @param  KBDI    KBDI index [inch/100]
+     * @param  KBDISI    KBDI index [mm]  (not [inch/100])
      * @param  FFWI    Fosberg index
      * @param  notes   some notes on DataSerie creation
      * @return         DataSerie
      */
-    def calculate(KBDI:DataSerie,FFWI:DataSerie, log: DataLog, notes:String=""):DataSerie={
-      createDataSerie(KBDI.start,KBDI.interval,ListFunctions.applyFunction(Functions.FFWImod,KBDI.values,FFWI.values), log, notes)
+    def calculate(KBDISI:DataSerie,FFWI:DataSerie, log: DataLog, notes:String=""):DataSerie={
+      createDataSerie(KBDISI.start,KBDISI.interval,ListFunctions.applyFunction(Functions.FFWImod,KBDISI.values,FFWI.values), log, notes)
     }
 
 
     def calculate(dss:DataCollection):DataSerie={
       val v=chooseVariablesAndCalculate(dss)
-      calculate(v.ds(KBDI),v.ds(FFWI), this.getLog(v))
+      calculate(v.ds(KBDISI),v.ds(FFWI), this.getLog(v))
     }
 
 
     def complete(dss:DataCollection):DataSerie={
       val v=chooseVariablesAndComplete(dss)
       val me=dss.dss(this)
-      me.updateLastAndNotes(calculate(v.ds(KBDI,1),v.ds(FFWI,1), this.getLog(v)))
+      me.updateLastAndNotes(calculate(v.ds(KBDISI,1),v.ds(FFWI,1), this.getLog(v)))
     }
   }
   case object KBDI extends Variable("KBDI index value","KBDI","inches/100",-100000,100000, classOf[Double]) with Serie with Calculable{
@@ -556,7 +556,7 @@ case object OrieuxDanger extends Variable("Orieux Danger classes","OrieuxDanger"
     in += RainSum::Nil
 
     /**
-     * Calculate rs (surface soil water reserve) DataSerie (Carrega 1988)
+     * Calculate res_surf (surface soil water reserve) DataSerie (Carrega 1988)
      *
      * @param    prev             previous'day rs  DataSerie
      * @param    P                rainfall [mm] DataSerie
@@ -610,13 +610,13 @@ case object OrieuxDanger extends Variable("Orieux Danger classes","OrieuxDanger"
      * @param    U             wind speed [m/s]
      * @param    P             rainfall [mm]
      * @param    r             Orieux soil water reserve [mm]
-     * @param    rs            Carrega surface soil water reserve [mm]
+     * @param    res_surf            Carrega surface soil water reserve [mm]
      * @param    PC            phenological coefficient
      * @param    notes         some notes on DataSerie creation
      * @return                 I87 DataSerie
      */
-    def calculate(T:DataSerie,H:DataSerie,U:DataSerie,P:DataSerie,r:DataSerie,rs:DataSerie,PC:DataSerie, log: DataLog, notes:String=""):DataSerie={
-      createDataSerie(T.start,T.interval,ListFunctions.applyFunction(Functions.I87,T.values,H.values,U.values,P.values,r.values,rs.values,PC.values.map(_.toInt)), log, notes)
+    def calculate(T:DataSerie, H:DataSerie, U:DataSerie, P:DataSerie, r:DataSerie, res_surf:DataSerie, PC:DataSerie, log: DataLog, notes:String=""):DataSerie={
+      createDataSerie(T.start,T.interval,ListFunctions.applyFunction(Functions.I87,T.values,H.values,U.values,P.values,r.values,res_surf.values,PC.values.map(_.toInt)), log, notes)
     }
 
     /**

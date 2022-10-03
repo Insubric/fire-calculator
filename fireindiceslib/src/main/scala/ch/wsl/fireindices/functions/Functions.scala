@@ -533,8 +533,8 @@ object Functions extends LazyLogging{
    * @param  FFWI   Fosberg index value (original)
    * @return        modified Fosberg index value
    */
-  def FFWImod(KBDI:Double, FFWI: Double):Double = {
-    val FAF = 0.000002 * math.pow(KBDI,2) + 0.72   //fuel availability factor
+  def FFWImod(KBDISI:Double, FFWI: Double):Double = {
+    val FAF = 0.000002 * math.pow(KBDISI / 100/ 2.54 * 10 ,2) + 0.72   //fuel availability factor
     FAF * FFWI
   }
   /**

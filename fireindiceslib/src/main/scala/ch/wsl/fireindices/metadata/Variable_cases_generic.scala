@@ -61,13 +61,13 @@ import scala.collection.mutable.ListBuffer
      * @param  notes      notes on DataSerie creation
      * @return            DataSerie
      */
-    def calculate(rs:DataSerie, log:DataLog, notes:String=""):DataSerie={
+    def calculate(res:DataSerie, log:DataLog, notes:String=""):DataSerie={
       var values = new ListBuffer[Int]
-      val dates = rs.getDates
+      val dates = res.getDates
       for (i <- 0 until dates.length){
         val MMdd = Utils.solarDate2String(dates(i),"MMdd").toLong
         values += (if (MMdd< 321 || (MMdd>=621 && MMdd<921) || MMdd>=1221) {   //winter or summer
-                      if (rs(i)<50) 200 else 100
+                      if (res(i)<50) 200 else 100
                    }else{             //spring and automn
                      100
                    })
@@ -293,11 +293,10 @@ import scala.collection.mutable.ListBuffer
     in += Latitude::Nil
 
     /**
-     * Calculate Precipitation duration in a day DataSerie
+     * Calculate Extraterrestrail radiation
      *
-     * @param  P             rainfall [mm]
-     * @param  climate       climate class (Deeming et al.1977)
-     * @return               PDur
+     * @param  Latitude             rainfall [mm]
+     * @return                      Ra
      */
     def calculate(dates:List[Long], Latitude:Double, log:DataLog, notes:String=""):DataSerie={
       //createDataSerieFromDates(P.getDates,ListFunctions.applyFunction_k(Functions.PDur,P.values,climate),"climate = "+climate+", "+notes)
@@ -326,11 +325,14 @@ import scala.collection.mutable.ListBuffer
     in += Rs_b::Nil
 
     /**
-     * Calculate Precipitation duration in a day DataSerie
+     * Calculate Solar radiation
      *
-     * @param  P             rainfall [mm]
-     * @param  climate       climate class (Deeming et al.1977)
-     * @return               PDur
+     * @param  Ra             Extraterrestrail radiation
+     * @param  N              Daylight hours FAO
+     * @param  ns             Actual duration of sunshine
+     * @param  Rs_a
+     * @param  Rs_b
+     * @return                Rs
      */
     def calculate(Ra:DataSerie, n:DataSerie, N:DataSerie, a:Double=0.25, b:Double=0.5, log:DataLog, notes:String=""):DataSerie={
       //createDataSerieFromDates(P.getDates,ListFunctions.applyFunction_k(Functions.PDur,P.values,climate),"climate = "+climate+", "+notes)
@@ -389,11 +391,9 @@ import scala.collection.mutable.ListBuffer
     in += Albedo::Nil
 
     /**
-     * Calculate Precipitation duration in a day DataSerie
+     * Calculate NetRadiation
      *
-     * @param  P             rainfall [mm]
-     * @param  climate       climate class (Deeming et al.1977)
-     * @return               PDur
+     * @return               NetRad
      */
     def calculate(Rs:DataSerie, Ra:DataSerie, H:DataSerie, Tmax:DataSerie, Tmin:DataSerie, Altitude:Double, Albedo:Double=0.20, log:DataLog, notes:String=""):DataSerie={
       //createDataSerieFromDates(P.getDates,ListFunctions.applyFunction_k(Functions.PDur,P.values,climate),"climate = "+climate+", "+notes)
