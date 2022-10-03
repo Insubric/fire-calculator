@@ -64,7 +64,7 @@ object App extends SimpleSwingApplication {
 
     var elab:SimpleApp4CSV = null
     var file:File = null
-    var files:Seq[File] = null
+    var files:scala.collection.Seq[File] = null
     var report:ReportLog = null
     var reports:ListBuffer[ReportLog] = new scala.collection.mutable.ListBuffer[ReportLog]
 

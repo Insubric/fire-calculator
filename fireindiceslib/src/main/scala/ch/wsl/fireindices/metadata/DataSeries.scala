@@ -3,9 +3,7 @@ package ch.wsl.fireindices.metadata
 
 import ch.wsl.fireindices.log.DataLog
 import ch.wsl.fireindices.metadata.Variable._
-import scala.collection.mutable.MapLike
-import scala.collection.mutable.HashTable
-import scala.collection.mutable.LinkedEntry
+
 import scala.collection.generic._
 
 /**

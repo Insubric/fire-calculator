@@ -25,8 +25,10 @@ class DataMapper(val dc: DataCollection) extends VariablePairs {
      * @return         Data
      */
     def data(key: Variable): Data = {
-      val e = findEntry(key.asInstanceOf[Variable])
-      dc(e.value).asInstanceOf[Data]
+      get(key) match {
+        case None => null
+        case Some(e) => dc(e)
+      }
     }
     
     

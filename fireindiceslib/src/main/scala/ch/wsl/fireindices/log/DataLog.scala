@@ -6,8 +6,8 @@
 
 package ch.wsl.fireindices.log
 
-import net.liftweb.json._
-import net.liftweb.json.Serialization.{read, write}
+//import net.liftweb.json._
+//import net.liftweb.json.Serialization.{read, write}
 //import spray.json._
 
 
@@ -62,21 +62,29 @@ case class CheckLog (check: String=""){
 
 
 case class ReportLog(var source: String="",
-                var headers: HeadersLog=new HeadersLog,
-                var read: String="",
-                var check: CheckLog = CheckLog(),
-                var series_calculated: List[DataLog]=List(),
-                var parameters_default: List[String]=List(),
-                var parameters_calculated: List[DataLog]=List(),
-                var parameters_given: List[ParamLog]=List()
+                      var headers: HeadersLog=new HeadersLog,
+                      var read: String="",
+                      var check: CheckLog = CheckLog(),
+                      var series_calculated: List[DataLog]=List(),
+                      var series_completed: List[DataLog]=List(),
+                      var series_replaced: List[DataLog]=List(),
+                      var n_replaced: Int =0,
+                      var parameters_default: List[String]=List(),
+                      var parameters_calculated: List[DataLog]=List(),
+                      var parameters_given: List[ParamLog]=List()
 ){
-  implicit val formats = Serialization.formats(NoTypeHints)
-// import MyJsonProtocol._
+//  implicit val formats = Serialization.formats(NoTypeHints)
+//// import MyJsonProtocol._
   
   def formatCalculateLog={
     val r = new StringBuilder
      r ++= "Calculated variables\n"
      r ++= series_calculated.map("\t" + _.format).mkString("\n")
+     r ++= "\n\n"
+     r ++= "Completed variables\n"
+     r ++= series_completed.map("\t" + _.format).mkString("\n")
+     r ++= s"Replaced variables ($n_replaced)\n"
+     r ++= series_replaced.map("\t" + _.format).mkString("\n")
      r ++= "\n\n"
      r ++= "Parameters calculated\n"
      r ++= parameters_calculated.map("\t" + _.format).mkString("\n")
@@ -103,8 +111,8 @@ case class ReportLog(var source: String="",
      r.toString
   }
   
-def formatJson = pretty(render(parse(write(this))))
-//def formatJson = this.toJson.prettyPrint
+//def formatJson = pretty(render(parse(write(this))))
+////def formatJson = this.toJson.prettyPrint
   
   
 }

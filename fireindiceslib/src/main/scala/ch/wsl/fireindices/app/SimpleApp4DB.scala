@@ -1,6 +1,9 @@
 package ch.wsl.fireindices.app
 
 import ch.wsl.fireindices.functions.Utils
+
+import java.util
+import scala.collection.mutable.ListBuffer
 //import ch.wsl.fireindices.functions.Lambda
 import ch.wsl.fireindices.log.CheckLog
 import ch.wsl.fireindices.log.DataLog
@@ -20,7 +23,7 @@ import com.typesafe.scalalogging.LazyLogging
 import java.io.File
 import java.sql._
 import scala.collection.mutable.LinkedHashMap
-import scala.collection.mutable.MutableList
+
 
 
 /**
@@ -36,8 +39,8 @@ class SimpleApp4DB extends LazyLogging {
   var logFileName:File = null
   var jsonlogFileName:File = null
   var nullDateList = 0D::Nil
-  var headers = new MutableList[String]
-  var otherHeaders = new MutableList[String]   //holds the header of the columns not recognized
+  var headers = new ListBuffer[String]
+  var otherHeaders = new ListBuffer[String]   //holds the header of the columns not recognized
   var DsDate = new DataSerie(ch.wsl.fireindices.metadata.Date, 0L::0L::Nil, 0D::0D::Nil, 
                              DataLog(ch.wsl.fireindices.metadata.Date.abbr))
   var dc = new DataCollection
@@ -125,7 +128,7 @@ class SimpleApp4DB extends LazyLogging {
     dc ++= settings
 
     //initial lists
-    var xDATE:MutableList[Long] = new MutableList
+    var xDATE:ListBuffer[Long] = new ListBuffer
     var xMap = new DataSeries 
  
     try{
@@ -246,13 +249,12 @@ class SimpleApp4DB extends LazyLogging {
     dc ++= settings
 
     try{
-		if (vars==null)
-			dc.calculate()
-		else
-			dc.calculate(vars)
+      if (vars==null)
+        dc.calculate()
+      else
+        dc.calculate(vars)
 			  
     }catch{
-      case e:Exception => logger.error(e.getStackTrace.map(_.toString).mkString("\n"))
     }
     
     val calcSeries = dc.ordered.filter(y => stillToCalculate.contains(y._1)).values
@@ -285,8 +287,8 @@ class SimpleApp4DB extends LazyLogging {
     }
 
     val complSeries = dc.ordered.filter(y => stillToComplete.contains(y._1)).filterNot(x => dc.toComplete.contains(x._1)).values
-    report.series_calculated = complSeries.map(_.logWithNotes).toList
-    report.parameters_given  = settings.ordered.values.map(_.toParamLog).toList
+    report.series_completed = complSeries.map(_.logWithNotes).toList.asInstanceOf[List[DataLog]]
+    if (report.parameters_given.length ==0)   report.parameters_given  = settings.ordered.values.map(_.toParamLog).toList
     dc
   }
   
@@ -378,8 +380,9 @@ class SimpleApp4DB extends LazyLogging {
         dc = copydc
         
         val complSeries = dc.ordered.filter(y => stillToComplete.contains(y._1)).filterNot(x => dc.toComplete.contains(x._1)).values
-        report.series_calculated = complSeries.map(_.logWithNotes).toList
-        report.parameters_given  = settings.ordered.values.map(_.toParamLog).toList
+        report.series_replaced = complSeries.map(_.logWithNotes).toList
+        report.n_replaced = nr2replace
+        if (report.parameters_given.length==0) report.parameters_given  = settings.ordered.values.map(_.toParamLog).toList
         dc
   }
 //   /**
@@ -506,7 +509,8 @@ class SimpleApp4DB extends LazyLogging {
       }
       if (json){
         val logWj = new java.io.FileWriter(jsonlogFileName)
-        logWj.write(log.formatJson)
+//        logWj.write(log.formatJson)
+        logWj.write(log.formatLog)
         logWj.close
       }
     }

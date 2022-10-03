@@ -7,7 +7,7 @@ import java.sql.ResultSet
 
 import ch.wsl.fireindices.functions.Utils._
 import scala.collection.mutable.LinkedHashMap
-import scala.collection.mutable.MutableList
+import scala.collection.mutable.ListBuffer
 import scala.collection.immutable.NumericRange
 
 /**
@@ -76,7 +76,7 @@ class DataSerie(override val variable:Serie, var start:Long, var interval:Long, 
    * @return            List[T]
    */
   def sliceData(dateFormat:String, condition:String):List[Double]={
-    val sliced = new MutableList[Double]
+    val sliced = new ListBuffer[Double]
     for (i <- 0 until values.length){
       if (solarDate2String(getDate(i),dateFormat)==condition) sliced+=values(i)
     }
@@ -90,7 +90,7 @@ class DataSerie(override val variable:Serie, var start:Long, var interval:Long, 
 //   * @return      
 //   */
 //  def aggregateTo(dateFormat:String):List[T]={
-//    val results = new MutableList[T]
+//    val results = new ListBuffer[T]
 //    val groupBy = getDates.map(Utils.solarDate2String(_,dateFormat)).asInstanceOf[List[String]]
 //    val zz = values.zip(groupBy)
 //    for (key <- uniques(groupBy)){
@@ -109,7 +109,7 @@ class DataSerie(override val variable:Serie, var start:Long, var interval:Long, 
    * @return        
    */
   def aggregate(dateFormat:String, f: (List[Double])=>Double):List[Double]={
-    val results = new MutableList[Double]
+    val results = new ListBuffer[Double]
     val groupBy = getDates.map(solarDate2String(_,dateFormat)).asInstanceOf[List[String]]
     val zz = values.zip(groupBy)
     for (key <- uniques(groupBy)){

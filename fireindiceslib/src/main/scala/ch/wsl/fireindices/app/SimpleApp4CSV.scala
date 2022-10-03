@@ -17,7 +17,7 @@ import com.typesafe.scalalogging.LazyLogging
 import java.io.File
 import java.sql._
 import scala.collection.mutable.LinkedHashMap
-import scala.collection.mutable.MutableList
+
 
 
 /**
@@ -114,7 +114,7 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
      ""           
   }
 
-  
+
   /**
    * calculate all the possible variables & indices from inputs choice
    *
@@ -124,29 +124,30 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
   def calculateFile(settings:Parameters, report: ReportLog=new ReportLog(), vars:Seq[Variable with Calculable]=null):File={
 
     calculate(settings, report, vars)
-        
+
 
     var outFilePath=""
-    val outputTABLE:List[StringDataSerie] = 
-            dcAliens.values.map(_.crop(dc.dss.head._2.start, dc.dss.head._2.values.length)).toList ::: 
-            dc.dss.ordered.map(_._2.getStringDataSerie).toList	
+    val outputTABLE:List[StringDataSerie] =
+      dcAliens.values.map(_.crop(dc.dss.head._2.start, dc.dss.head._2.values.length)).toList :::
+        dc.dss.ordered.map(_._2.getStringDataSerie).toList
 
-    
+
     outFilePath = inputFile.getParent+"/"+inputFile.getName.substring(0, inputFile.getName.length-4)+"_RESULT.csv"
     val fileout = new java.io.FileWriter(outFilePath)
-    
+
     try{
-      
+
       printTable(DsDate, outputTABLE, ",",fileout,true)
-      
+
     }catch{
       case e:Exception => logger.error("ERROR: DATA OUTPUT FILE=> " + e.getStackTrace.map(_.toString).mkString("\n"))
     }finally{
       fileout.close
     }
-   
+
     return new File(outFilePath)
   }
+
   
   /**
    * complete all the possible variables & indices from inputs choice
@@ -154,11 +155,14 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
    * @param  Settings Parameter > all parameters needed for calculation
    * @return          report of calculation (for logs)
    */
-  def completeFile(settings:Parameters, report: ReportLog=new ReportLog, vars:Seq[Serie with Calculable]=null, printOnlyLast:Boolean = true):File={
+  def completeFile(settings:Parameters, report: ReportLog=new ReportLog, vars2complete:Seq[Serie with Calculable]=null, vars2calculate:Seq[Serie with Calculable]=null, printOnlyLast:Boolean = true):File={
 
-    complete(settings, report, vars, printOnlyLast)
+    calculate(settings, report, vars2calculate)
+//    if (vars2calculate!= null) calculate(settings, report, vars2calculate)
+    complete(settings, report, vars2complete, printOnlyLast)
 
-    var outFilePath=""	
+    var outFilePath=""
+
     
     val outputTABLE = if (printOnlyLast) {
 //                            dcAliens.map(_._2.lastDs()).toList ::: dc.dss.ordered.map(x => x._2.lastDs().getStringDataSerie).toList
@@ -188,8 +192,7 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
    
     return new File(outFilePath)
   }
-  
- 
+
   /**
    * replace the already calculated values with freshly calculated (with complete) 
    * (to be used for few cases, since it is slow beacuse it internally uses complete) 
@@ -197,9 +200,12 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
    * @param  Settings Parameter > all parameters needed for calculation
    * @return          report of calculation (for logs)
    */
-  def replaceFile(settings:Parameters, nr2replace: Int, vars:Seq[Serie with Calculable]=null, varsToSkeep:Seq[Serie]=null, report: ReportLog=new ReportLog, printOnlyLast:Boolean = true):File={
-      
-   replace(settings, nr2replace, vars, varsToSkeep, report)   
+  def replaceFile(settings:Parameters, nr2replace: Int, vars:Seq[Serie with Calculable]=null, varsToSkeep:Seq[Serie]=null,
+                  vars2calculate:Seq[Serie with Calculable]=null, report: ReportLog=new ReportLog, printOnlyLast:Boolean = true):File={
+
+    calculate(settings, report, vars2calculate)
+
+    replace(settings, nr2replace, vars, varsToSkeep, report)
          
     val outFilePath = inputFile.getParent+"/"+inputFile.getName.substring(0, inputFile.getName.length-4)+"_RESULT.csv"
     

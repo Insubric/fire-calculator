@@ -2,7 +2,7 @@ package ch.wsl.fireindices.functions
 import ch.wsl.fireindices.metadata.Null
 import java.io._
 import java.sql._
-import scala.collection.mutable.MutableList
+import scala.collection.mutable.ListBuffer
 import math._
 
 /**
@@ -404,14 +404,14 @@ object ListFunctions {
   def lastRainSum_withThreshold_20days(P:List[Double], rainfallEventThreshold:Double=2.00,pastDaysToConsider:Int=20):(List[Double],List[Double]) = {
 //    if (P.map(Null.is(_)).reduceRight(_||_)) return (List.fill(P.length)(Double.NaN), List.fill(P.length)(Double.NaN)) // wrong
     
-    val out:MutableList[Double]= new MutableList//(P.length)
-    val ageRainEvent:MutableList[Double]=new MutableList//(P.length)
+    val out:ListBuffer[Double]= new ListBuffer//(P.length)
+    val ageRainEvent:ListBuffer[Double]=new ListBuffer//(P.length)
     for (i<- 0 until pastDaysToConsider-1){  //create first null values
       out+=Double.NaN
       ageRainEvent+=Double.NaN
     }
     for (i <- 0 until P.length){
-      val p=P.view(math.max(0,i-pastDaysToConsider+1),i+1)  //include current day in past days 
+      val p=P.view.slice(math.max(0,i-pastDaysToConsider+1),i+1)  //include current day in past days
       
       var age=0.0
       var maxRain=0.0
@@ -424,23 +424,29 @@ object ListFunctions {
       } else {
         
       
-          for (j<- 0 until p.length){
-            if (j>0) prevP=p(j-1)
-            if (prevP<rainfallEventThreshold && p(j)>=rainfallEventThreshold) {   //new rainfall event
-              maxRain = p(j)
+          for (j<- 0 until p.size){
+            val pp:Double = {p.slice(j, j).headOption match{
+              case None =>  null
+              case Some(x) => x
+            }}.asInstanceOf[Double]
+            if (j>0)
+              prevP=p.slice(j-1, j).head
+
+            if (prevP<rainfallEventThreshold && pp>=rainfallEventThreshold) {   //new rainfall event
+              maxRain = pp
               age=j+1
-              rainSum=p(j)
-            } else if (p(j)>=rainfallEventThreshold) {  //same rainfall
-              if (p(j)>=maxRain) maxRain=p(j)
+              rainSum=pp
+            } else if (pp>=rainfallEventThreshold) {  //same rainfall
+              if (pp>=maxRain) maxRain=pp
               age = j+1
-              rainSum += p(j)
+              rainSum += pp
             } 
           }
         
       }
       if (i>=pastDaysToConsider-1){    //add only for the not in the first period
         out+=rainSum
-        ageRainEvent+=p.length-age
+        ageRainEvent+=p.size-age
       }
       
     }   
@@ -468,7 +474,7 @@ object ListFunctions {
       var TSR = 0.0
       var RET = 0.0
       var soilWater = Double.NaN
-      val irepi:MutableList[Double]= new MutableList//(P.length)
+      val irepi:ListBuffer[Double]= new ListBuffer//(P.length)
       
     
       for (i<- 0 until 1){  //create first null values
@@ -521,7 +527,7 @@ object ListFunctions {
 //      var TSR = 0.0
 //      var RET = 0.0
 //      var soilWater = soilWaterStart
-//      val irepi:MutableList[Double]= new MutableList//(P.length)
+//      val irepi:ListBuffer[Double]= new ListBuffer//(P.length)
 //      
 //      for (i<- 0 until 2-1){  //create first null values
 //        irepi += Double.NaN
@@ -558,7 +564,7 @@ object ListFunctions {
    * for correction of wrong input with last correct data
    */
   private def addPrevElement(start:Double,NbNull:Double):List[Double]={
-    var LinList:MutableList[Double] = new MutableList
+    var LinList:ListBuffer[Double] = new ListBuffer
     for(i <- 1 to NbNull.toInt)  LinList += start
     return LinList.toList
   }
@@ -567,7 +573,7 @@ object ListFunctions {
    * for correction of wrong input with linearization of correct data
    */
   private def addLinElement(start:Double,NbNull:Double,stop:Double):List[Double]={
-    var LinList:MutableList[Double] = new MutableList
+    var LinList:ListBuffer[Double] = new ListBuffer
     for(i <- 1 to NbNull.toInt)  LinList += (start + (stop-start)/(NbNull+1)*i)
     return LinList.toList
   }

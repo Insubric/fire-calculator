@@ -20,7 +20,7 @@ abstract class KeySet[K,V]  extends LinkedHashMap[K,V] {
    *
    * @param          that        > collection of the newelements to add
    */ 
-  def this(that: TraversableOnce[V])= {
+  def this(that: IterableOnce[V])= {
 	  this()
 	  this ++= that
   }
@@ -41,16 +41,16 @@ abstract class KeySet[K,V]  extends LinkedHashMap[K,V] {
    */
   def += (v: V): this.type = { put(buildKey(v), v); this }
   
-  /**
-   * add a new key & variable in the KeySet (abstract)
-   *
-   * @param   kv Tuple[K,V] > the key and the variable
-   * @return     KeySet
-   */
-  override def += (kv: (K,V)): this.type = {
-    if (kv._1 != buildKey(kv._2)) throw new IllegalArgumentException("Key must correspond to buildKey result!")
-    this += kv._2
-  }
+//  /**
+//   * add a new key & variable in the KeySet (abstract)
+//   *
+//   * @param   kv Tuple[K,V] > the key and the variable
+//   * @return     KeySet
+//   */
+//  override def += (kv: (K,V)): this.type = {
+//    if (kv._1 != buildKey(kv._2)) throw new IllegalArgumentException("Key must correspond to buildKey result!")
+//    this += kv._2
+//  }
 
   /**
    * add new elements in the KeySet

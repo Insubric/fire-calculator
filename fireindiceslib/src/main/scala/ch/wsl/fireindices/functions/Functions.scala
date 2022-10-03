@@ -1,11 +1,12 @@
 package ch.wsl.fireindices.functions
 
 import java.io.File
-import scala.collection.mutable.MutableList
 import scala.math._
 import ch.wsl.fireindices.metadata.Null
 import ch.wsl.fireindices.functions.Utils._
 import com.typesafe.scalalogging.LazyLogging
+
+import scala.collection.mutable.ListBuffer
 
 /**
  * Contains all the core functions for the calculation of the indices,
@@ -353,7 +354,7 @@ object Functions extends LazyLogging{
    */
   def MC1000(EMC24:List[Double], PDur:List[Double]):List[Double] = {
     val start = 30.0  //start value in %
-    var out = new MutableList[Double]
+    var out = new ListBuffer[Double]
 
     val D = ListFunctions.applyFunction(D1000,EMC24,PDur)
     val Dm = ListFunctions.weeklySum(D).map(_/7)
@@ -882,7 +883,7 @@ object Functions extends LazyLogging{
     var tmpCheck1 = false
     var tmpCheck2 = false
     var k3 = 0.0
-    var resultList = new MutableList[Double]
+    var resultList = new ListBuffer[Double]
 
     for (i <- 0 until currentDate.length) {
       val MMdd = Utils.solarDate2String(currentDate(i)).substring(4, 8).toLong
@@ -923,7 +924,7 @@ object Functions extends LazyLogging{
     var tmpCheck1 = false
     var tmpCheck2 = false
     var k3 = 0.0
-    var resultList = new MutableList[Double]
+    var resultList = new ListBuffer[Double]
     var birchOk = false
     var robiniaOk = false
 
@@ -1585,7 +1586,7 @@ object Functions extends LazyLogging{
    * @return                  Ifa index value
    */
   def Ifa(dates:List[Long],IG:List[Double],P:List[Double],U:List[Double],FireSeasonStart:Long,FireSeasonEnd:Long):List[Double] = {
-    var IGcum = new MutableList[Double]
+    val IGcum = new ListBuffer[Double]
     val start = Utils.solarDate2String(FireSeasonStart).substring(4, 8).toLong
     val end = Utils.solarDate2String(FireSeasonEnd).substring(4, 8).toLong
     //     val IGcum = ListFunctions.cumSum(IG)
@@ -1660,7 +1661,7 @@ object Functions extends LazyLogging{
    //* @return                  B index value
    //*/
   //def B(dates:List[Long],IG:List[Double],P:List[Double],FireSeasonStart:Long,FireSeasonEnd:Long):List[Double] = {
-    //var IGcum = new MutableList[Double]
+    //var IGcum = new ListBuffer[Double]
     //val start = Utils.solarDate2String(FireSeasonStart).substring(4, 8).toLong
     //val end = Utils.solarDate2String(FireSeasonEnd).substring(4, 8).toLong
     ////     val IGcum = ListFunctions.cumSum(IG)

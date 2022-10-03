@@ -8,15 +8,14 @@ import java.io.File
 import java.text.NumberFormat
 import ch.wsl.fireindices.functions.Utils
 import scala.collection.mutable.HashMap
-import scala.collection.mutable.MapLike
 import scala.collection.generic._
-import scala.collection.mutable.MutableList
+import scala.collection.mutable.ListBuffer
 
 /**
  * Collection of Parameter objects.
  *
  **/
-class Parameters(that: TraversableOnce[Parameter]) extends KeySet[Variable,Parameter](that) {									
+class Parameters(that: IterableOnce[Parameter]) extends KeySet[Variable,Parameter](that) {
 									//with Map[Variable,Parameter] 
 									//with MapLike[Variable,Parameter, Parameters]{
  
@@ -150,7 +149,7 @@ class Parameters(that: TraversableOnce[Parameter]) extends KeySet[Variable,Param
    */
   def completeWithDefaults:List[String] ={
     val missing = defaults.filterKeys(!this.keySet.contains(_))
-    var toPrint=new MutableList[String]
+    var toPrint=new ListBuffer[String]
     missing.foreach((kv)=>{this.addIfNotNull(kv._1.asInstanceOf[Variable],kv._2)
                            toPrint += kv._1.abbr})
     toPrint.toList

@@ -5,7 +5,9 @@ import ch.wsl.fireindices.functions.ListFunctions
 import ch.wsl.fireindices.functions.Utils
 import ch.wsl.fireindices.ImplicitConversions._
 import ch.wsl.fireindices.log.DataLog
-import scala.collection.mutable.MutableList
+
+import java.util
+import scala.collection.mutable.ListBuffer
 
   //using unit field for the java date format
   case object Date extends Variable("Date","DateYYYYMMDD","yyyyMMdd",-Variable.msecInOneYear*100,Variable.msecInOneYear*100, classOf[Long]) with Serie
@@ -26,7 +28,7 @@ import scala.collection.mutable.MutableList
      */
      
     def calculate(dates:Seq[Long], beginSnow:Long, endSnow:Long, log:DataLog, notes:String=""):DataSerie={
-      var values = new MutableList[Int]
+      var values = new ListBuffer[Int]
       val beginS = Utils.solarDate2String(beginSnow,"MMdd").toLong
       val endS = Utils.solarDate2String(endSnow,"MMdd").toLong
       for (i <- 0 until dates.length){
@@ -60,7 +62,7 @@ import scala.collection.mutable.MutableList
      * @return            DataSerie
      */
     def calculate(rs:DataSerie, log:DataLog, notes:String=""):DataSerie={
-      var values = new MutableList[Int]
+      var values = new ListBuffer[Int]
       val dates = rs.getDates
       for (i <- 0 until dates.length){
         val MMdd = Utils.solarDate2String(dates(i),"MMdd").toLong
@@ -96,7 +98,7 @@ import scala.collection.mutable.MutableList
      * @return              DataSerie
      */
     def calculate(dates:Seq[Long], birchLeaves:Long, log:DataLog, notes:String=""):DataSerie={
-      var values = new MutableList[Int]
+      var values = new ListBuffer[Int]
       for (i <- 0 until dates.length){                    //TODO optimize
         val MMdd = Utils.solarDate2String(dates(i),"MMdd")
         values += (if (MMdd==Utils.solarDate2String(birchLeaves,"MMdd"))  1 else  0)
@@ -128,7 +130,7 @@ import scala.collection.mutable.MutableList
      * @return                 DataSerie
      */
     def calculate(dates:Seq[Long], robiniaBlossom:Long, log:DataLog, notes:String=""):DataSerie={
-      var values = new MutableList[Int]
+      var values = new ListBuffer[Int]
       for (i <- 0 until dates.length){                    //TODO optimize
         val MMdd = Utils.solarDate2String(dates(i),"MMdd")
         values += (if (MMdd==Utils.solarDate2String(robiniaBlossom,"MMdd"))  1 else  0)

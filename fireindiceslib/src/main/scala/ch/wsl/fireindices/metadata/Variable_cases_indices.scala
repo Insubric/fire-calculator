@@ -6,7 +6,7 @@ import ch.wsl.fireindices.functions.Utils
 import ch.wsl.fireindices.ImplicitConversions._
 
 import ch.wsl.fireindices.log.DataLog
-import scala.collection.mutable.MutableList
+import scala.collection.mutable.ListBuffer
 
 
   case object Nesterov extends Variable("Nesterov index value","Nesterov","--",-100000,100000, classOf[Double]) with Serie with Calculable{

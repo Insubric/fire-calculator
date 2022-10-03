@@ -8,7 +8,7 @@ import ch.wsl.fireindices.ImplicitConversions._
 
 import ch.wsl.fireindices.log.DataLog
 import ch.wsl.fireindices.log.ParamLog
-import scala.collection.mutable.MutableList
+
 
 
 

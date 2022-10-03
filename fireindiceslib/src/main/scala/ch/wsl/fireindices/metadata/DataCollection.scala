@@ -2,9 +2,7 @@
 
 package ch.wsl.fireindices.metadata
 
-import scala.collection.mutable.MapLike
-import scala.collection.mutable.HashTable
-import scala.collection.mutable.LinkedEntry
+
 import scala.collection.generic._
 
 /**
@@ -13,7 +11,7 @@ import scala.collection.generic._
  **/
  
 
-class DataCollection(that: TraversableOnce[Data]) extends KeySet[Variable, Data](that){
+class DataCollection(that: IterableOnce[Data]) extends KeySet[Variable, Data](that){
 																//with Map[Variable,Data] 
 																//with MapLike[Variable,Data, DataCollection]{
 

@@ -4,7 +4,7 @@ import java.sql.ResultSet
 
 import ch.wsl.fireindices.functions.Utils
 import scala.collection.mutable.LinkedHashMap
-import scala.collection.mutable.MutableList
+import scala.collection.mutable.ListBuffer
 import scala.collection.immutable.NumericRange
 
 /**
@@ -47,7 +47,7 @@ class StringDataSerie(val name:String,var start:Long,var interval:Long, var valu
    * @return            List[T]
    */
   def sliceData(dateFormat:String, condition:String):List[String]={
-    val sliced = new MutableList[String]
+    val sliced = new ListBuffer[String]
     for (i <- 0 until values.length){
       if (Utils.solarDate2String(getDate(i),dateFormat)==condition) sliced+=values(i)
     }
