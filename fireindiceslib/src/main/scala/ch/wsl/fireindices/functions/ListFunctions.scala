@@ -411,8 +411,9 @@ object ListFunctions {
       ageRainEvent+=Double.NaN
     }
     for (i <- 0 until P.length){
-      val p=P.view.slice(math.max(0,i-pastDaysToConsider+1),i+1)  //include current day in past days
-      
+//      val p=P.view.slice(math.max(0,i-pastDaysToConsider+1),i+1)  //include current day in past days
+      val p=P.slice(math.max(0,i-pastDaysToConsider+1),i+1)  //include current day in past days
+
       var age=0.0
       var maxRain=0.0
       var rainSum=0.0
@@ -425,12 +426,12 @@ object ListFunctions {
         
       
           for (j<- 0 until p.size){
-            val pp:Double = {p.slice(j, j).headOption match{
-              case None =>  null
-              case Some(x) => x
-            }}.asInstanceOf[Double]
+            val pp:Double =  p(j) //match{
+//              case None =>  Double.NaN
+//              case Some(x) => x
+//            }}.asInstanceOf[Double]
             if (j>0)
-              prevP=p.slice(j-1, j).head
+              prevP=p(j-1)
 
             if (prevP<rainfallEventThreshold && pp>=rainfallEventThreshold) {   //new rainfall event
               maxRain = pp

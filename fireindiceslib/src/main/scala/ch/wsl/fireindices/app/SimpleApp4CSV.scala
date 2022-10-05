@@ -203,8 +203,6 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
   def replaceFile(settings:Parameters, nr2replace: Int, vars:Seq[Serie with Calculable]=null, varsToSkip:Seq[Serie]=null,
                   vars2calculate:Seq[Serie with Calculable]=null, report: ReportLog=new ReportLog, printOnlyLast:Boolean = true):File={
 
-    logger.error(vars2calculate.toString())
-
     calculate(settings, report, vars2calculate)
 
     replace(settings, nr2replace, vars, varsToSkip, report)
