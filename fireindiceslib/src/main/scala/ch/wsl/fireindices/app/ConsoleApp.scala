@@ -89,7 +89,10 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
     parIn += (v.abbr -> myopt)
   }
 
-  val input = trailArg[File]("input", descr ="Input file to read. ", required=false)
+//  val input = trailArg[File]("input", descr ="Input file to read. ", required=false)
+
+  val input = trailArg[List[File]]("input", descr ="Input file/files to read. ", required=true)
+
 //    validate =  (x) =>
 //
 //      val file = new File(x)
@@ -98,7 +101,9 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
 //
 //      file
 //  )
-  validateFileExists(input)
+
+  validateFilesExist(input)
+//  validateFileExists(input)
   verify()
 }
 
@@ -114,90 +119,93 @@ object ConsoleApp extends LazyLogging {
           if (a.variableinfo()){
                 println(Variable.variables.map(_.descJSON).mkString("\n"))
             }else{
-            
-              val ix =  if (a.Risico())
-                          Risico_dffm::Risico_WindEffect::Risico_V::Risico_FI::Nil
-                        else
-                          a.indices.getOrElse("").split(",").toList.map(Variable.getByAbbrCaseInsensitive(_)).filterNot(_ ==null)
 
-              val mix =  if (a.Risico())
-                Risico_dffm::Risico_WindEffect::Risico_V::Risico_FI::Nil
-              else
-                a.calculateMissingIndices.getOrElse("").split(",").toList.map(Variable.getByAbbrCaseInsensitive(_)).filterNot(_ ==null)
+              a.input().map { file =>
 
-              val parameters = new Parameters
+                val ix = if (a.Risico())
+                  Risico_dffm :: Risico_WindEffect :: Risico_V :: Risico_FI :: Nil
+                else
+                  a.indices.getOrElse("").split(",").toList.map(Variable.getByAbbrCaseInsensitive(_)).filterNot(_ == null)
+
+                val mix = if (a.Risico())
+                  Risico_dffm :: Risico_WindEffect :: Risico_V :: Risico_FI :: Nil
+                else
+                  a.calculateMissingIndices.getOrElse("").split(",").toList.map(Variable.getByAbbrCaseInsensitive(_)).filterNot(_ == null)
+
+                val parameters = new Parameters
 
                 //add paramters from file
                 if (a.filePar()) {
-                  val parFile = new File(a.input().getPath.take(a.input().getPath.size-4)+"_PAR.txt")
+                  val parFile = new File(file.getPath.take(file.getPath.size - 4) + "_PAR.txt")
                   if (parFile.exists) parameters.read(parFile)
                 }
 
                 //add parameters from command line
-                for ((str,myopt)<- a.parIn){//asInstanceOf[HashMap[String, ScallopOption[_]]].filter((k,v) => v.toOption.isDefined)){
-                  val abbr = if (myopt.name.length==2 & myopt.name.tail=="_") myopt.name.head.toString else myopt.name  // to read also the POSIX with 1 char
-                  val v=Variable.getByAbbrCaseInsensitive(abbr)
+                for ((str, myopt) <- a.parIn) { //asInstanceOf[HashMap[String, ScallopOption[_]]].filter((k,v) => v.toOption.isDefined)){
+                  val abbr = if (myopt.name.length == 2 & myopt.name.tail == "_") myopt.name.head.toString else myopt.name // to read also the POSIX with 1 char
+                  val v = Variable.getByAbbrCaseInsensitive(abbr)
                   if (myopt.toOption.isDefined) {
-                      val value = myopt()
-                      parameters.addIfNotNull(v.asInstanceOf[Variable],v match {
-                            case FireSeasonStart  => Utils.solarDate2Long(value.toString,"dd.MM")
-                            case FireSeasonEnd    => Utils.solarDate2Long(value.toString,"dd.MM")
-                            case M68VegCorrStep3Start=> Utils.solarDate2Long(value.toString,"dd.MM")
-                            case M68VegCorrStep3End=> Utils.solarDate2Long(value.toString,"dd.MM")
-                            case XbirchLeaves   => Utils.solarDate2Long(value.toString,"dd.MM")
-                            case XrobiniaBlossom => Utils.solarDate2Long(value.toString,"dd.MM")
-                            case XsnowcoverStart=> Utils.solarDate2Long(value.toString,"dd.MM")
-                            case XsnowcoverEnd   => Utils.solarDate2Long(value.toString,"dd.MM")
-                            case _ => value.toString.toDouble //asInstanceOf[Double]
-                     })
+                    val value = myopt()
+                    parameters.addIfNotNull(v.asInstanceOf[Variable], v match {
+                      case FireSeasonStart => Utils.solarDate2Long(value.toString, "dd.MM")
+                      case FireSeasonEnd => Utils.solarDate2Long(value.toString, "dd.MM")
+                      case M68VegCorrStep3Start => Utils.solarDate2Long(value.toString, "dd.MM")
+                      case M68VegCorrStep3End => Utils.solarDate2Long(value.toString, "dd.MM")
+                      case XbirchLeaves => Utils.solarDate2Long(value.toString, "dd.MM")
+                      case XrobiniaBlossom => Utils.solarDate2Long(value.toString, "dd.MM")
+                      case XsnowcoverStart => Utils.solarDate2Long(value.toString, "dd.MM")
+                      case XsnowcoverEnd => Utils.solarDate2Long(value.toString, "dd.MM")
+                      case _ => value.toString.toDouble //asInstanceOf[Double]
+                    })
                   }
                 }
 
-                
-//                val completionStr = if (addPar.value.getOrElse(false)) "Added default parameters: "+parameters.completeWithDefaults+"\n"
-//                                    else ""
+
+                //                val completionStr = if (addPar.value.getOrElse(false)) "Added default parameters: "+parameters.completeWithDefaults+"\n"
+                //                                    else ""
 
 
                 val elab = new SimpleApp4CSV
-                val log  = new ReportLog()
-                
+                val log = new ReportLog()
+
                 //add default parameters
                 log.parameters_default = if (a.addPar()) parameters.completeWithDefaults
-                                         else List()
-            
+                else List()
 
-                elab.readHeadersFile(a.input(),log)
-                elab.readDataFile(a.input(),parameters, a.sdt.toOption, a.edt.toOption)
+
+                elab.readHeadersFile(file, log)
+                elab.readDataFile(file, parameters, a.sdt.toOption, a.edt.toOption)
                 if (!a.nocheck()) elab.check(log)
 
-                if (a.complete() && a.replace()>0)
+                if (a.complete() && a.replace() > 0)
                   logger.warn("Both complete and replace options have been specified. Replace option will be ignored.")
 
                 if (!a.nocalc())
-                        if (!a.complete() & a.replace()<1) {
+                  if (!a.complete() & a.replace() < 1) {
 
-                          if (ix.size==0) elab.calculateFile(parameters, log)
-                          else elab.calculateFile(parameters, log, ix.asInstanceOf[Seq[Variable with Calculable]])
+                    if (ix.size == 0) elab.calculateFile(parameters, log)
+                    else elab.calculateFile(parameters, log, ix.asInstanceOf[Seq[Variable with Calculable]])
 
-                        }else{
+                  } else {
 
-                          val vars2calculate = if (mix.size==0) null else mix.asInstanceOf[Seq[Serie with Calculable]]
+                    val vars2calculate = if (mix.size == 0) null else mix.asInstanceOf[Seq[Serie with Calculable]]
 
-                          if (a.complete()) {
+                    if (a.complete()) {
 
-                            if (ix.size==0) elab.completeFile(parameters, log, null , vars2calculate, a.onlyLast())
-                            else elab.completeFile(parameters, log, ix.asInstanceOf[Seq[Serie with Calculable]], vars2calculate, a.onlyLast())
+                      if (ix.size == 0) elab.completeFile(parameters, log, null, vars2calculate, a.onlyLast())
+                      else elab.completeFile(parameters, log, ix.asInstanceOf[Seq[Serie with Calculable]], vars2calculate, a.onlyLast())
 
-                          }else{
-                            //replace
-                            if (ix.size==0) elab.replaceFile(parameters, a.replace(), null, vars2calculate, vars2calculate, log,  a.onlyLast())
-                            else elab.replaceFile(parameters, a.replace(), ix.asInstanceOf[Seq[Serie with Calculable]], null, vars2calculate, log, a.onlyLast())
+                    } else {
+                      //replace
+                      if (ix.size == 0) elab.replaceFile(parameters, a.replace(), null, vars2calculate, vars2calculate, log, a.onlyLast())
+                      else elab.replaceFile(parameters, a.replace(), ix.asInstanceOf[Seq[Serie with Calculable]], null, vars2calculate, log, a.onlyLast())
 
-                          }
-                        }
+                    }
+                  }
 
 
-              elab.writeLog(log, true, a.jsonlog())
+                elab.writeLog(log, true, a.jsonlog())
+              }
             } 
 
         }catch{
