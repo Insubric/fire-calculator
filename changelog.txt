@@ -1,10 +1,16 @@
 Fire Weather Index Calculator
 
+- version 2.00 (05.10.2022)
+	* upgraded to scala 2.13.9 (replaced MutableList with ListBuffer)
+	* upgraded libraries, replaced argot with scallop (for command line application)
+	* fixed new bug in AgeRainEvent (due to new libraries) 
+	* multi file console app (accept multiple files as trailing args)
+	
 - version 1.22 (09.06.2016)
 	* upgraded to scala 2.11.8
 	* new sbt multiproject, including fireindiceslib and fireindicesui
 	* new launcher in root project (if no arguments gui is launched, otherwise console)
-        * changed XsnowcoverStart and XsnowcoverEnd to 01.01, in order to have no snowcover as a default
+    * changed XsnowcoverStart and XsnowcoverEnd to 01.01, in order to have no snowcover as a default
 
 - version 1.21 (16.02.2016)
 	* added implementation of IREPI (included variables for radiation Rs, Ra, ...)
