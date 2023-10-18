@@ -1214,7 +1214,7 @@ object Functions extends LazyLogging{
    *
    * @param  start      start value for initialization
    * @param  prev       previous day FFMC value
-   * @param  P          rainfall amount [mm]
+   * @param  P12          rainfall amount [mm]
    * @param  T12        temperature at noon (12:00) [C]
    * @param  H12        relative humidity at noon (12:00) [%]
    * @param  U12        wind speed at noon (12:00) [m/s]
@@ -1267,7 +1267,7 @@ object Functions extends LazyLogging{
    *
    * @param  start      start value for initialization
    * @param  prev       previous day DMC value
-   * @param  P          rainfall amount [mm]
+   * @param  P12        rainfall amount [mm]
    * @param  T12        temperature at noon (12:00) [C]
    * @param  H12        relative humidity at noon (12:00)[%]
    * @param  snowcover  snowcover (0/1)
@@ -1377,7 +1377,7 @@ object Functions extends LazyLogging{
    * @param  start      start value for initialization
    * @param  prev       previous day DC value
    * @param  date       current date
-   * @param  P          rainfall amount [mm]
+   * @param  P12        rainfall amount [mm]
    * @param  T12        temperature at noon (12:00) [C]
    * @param  snowcover  snowcover [0/1]
    * @param  latitude   latitude of location (if NaN will use only the standard table to get daylength (no latitude influence))
@@ -1491,7 +1491,188 @@ object Functions extends LazyLogging{
     return if (B>1) math.exp(2.72*math.pow(0.434*math.log(B),0.647))
            else B
   }
-  
+
+
+  /**
+   * Computes sheltered duff moisture code (new in the family of the canadian index)
+   *
+   * The calculation starts when no snowcover is present.
+   * The influence of latitude is implemented as done in the R-package cffdrs
+   *
+   * @param start     start value for initialization
+   * @param prev      previous day DMC value
+   * @param P12       rainfall amount [mm]
+   * @param T12       temperature at noon (12:00) [C]
+   * @param H12       relative humidity at noon (12:00)[%]
+   * @param snowcover snowcover (0/1)
+   * @param latitude  latitude of location (if NaN will use only the standard table to get daylength (no latitude influence)
+   * @param start     evinced from R-package cffdrs
+   * @return SDMC index value
+   */
+  def SDMC(prev: Double, date: Long, P12: Double, T12: Double, H12: Double,
+          snowcover: Int, latitude: Double = Double.NaN, start: Double = 12.0): Double = {
+
+    if (Null.is(snowcover) || snowcover == 1) return Double.NaN
+    else {
+
+      val prevSDMC = if (Null.is(prev)) start
+                    else prev
+
+      val prevMC = 20.0 + math.exp(-(prevSDMC-244.72)/43.43) //duff moisture content from previous day   //formulation as in R-package cffdrs
+
+      val Re = if (P12<= 0.42) 0     //effective rainfall
+                else if (P12>0.42 & P12<=7.69) 0.218 * P12 - 0.094
+                else 0.83*P12 - 4.8
+
+      val predryMC  = if (Re > 0) {
+         prevMC + 1000 * Re
+
+        //                  val m0 = 20.0 + math.exp(5.6348-prevDMC/43.43)  //duff moisture content from previous day  //original formulation
+
+
+        var b = if (prevSDMC <= 33) 100.0 / (0.5 + 0.3 * prevSDMC)
+                else if (prevSDMC > 65) 6.2 * math.log(prevSDMC) - 17.2
+                else 14 - 1.3 * math.log(prevSDMC)
+
+        prevMC + 1000 * Re / (48.77 + b * Re)  //duff moisture content after P
+        //math.max(244.72 - 43.43*math.log(mR-20.0),0.0)
+
+
+      } else { //if (Re==0) {
+        prevMC
+      }
+
+      //                  244.72 - 43.43*math.log(predryMC-20.0)  //original formulation
+      //43.43 * (5.6348 - math.log(predryMC - 20.0)) //formulation as in R-package cffdrs
+      val predSDMC = 43.43 * (5.6348 - math.log(predryMC - 20.0)) //formulation as in R-package cffdrs
+
+      val MM = Utils.solarDate2String(date).substring(4, 6).toLong //get month
+      val dl = if (Null.is(latitude) || (latitude <= 90 & latitude > 30)) MM match { //day-length - 3
+        case 1 => 6.5
+        case 2 => 7.5
+        case 3 => 9
+        case 4 => 12.8
+        case 5 => 13.9
+        case 6 => 13.9
+        case 7 => 12.4
+        case 8 => 10.9
+        case 9 => 9.4
+        case 10 => 8
+        case 11 => 7
+        case 12 => 6
+
+      } else if (latitude <= 30 & latitude > 10) MM match {
+        case 1 => 7.9
+        case 2 => 8.4
+        case 3 => 8.9
+        case 4 => 9.5
+        case 5 => 9.9
+        case 6 => 10.2
+        case 7 => 10.1
+        case 8 => 9.7
+        case 9 => 9.1
+        case 10 => 8.6
+        case 11 => 8.1
+        case 12 => 7.8
+
+      } else if (latitude <= -10 & latitude > -30) MM match {
+        case 1 => 10.1
+        case 2 => 9.6
+        case 3 => 9.1
+        case 4 => 8.5
+        case 5 => 8.1
+        case 6 => 7.8
+        case 7 => 7.9
+        case 8 => 8.3
+        case 9 => 8.9
+        case 10 => 9.4
+        case 11 => 9.9
+        case 12 => 10.2
+
+      } else if (latitude <= -30 & latitude >= -90) MM match {
+        case 1 => 11.5
+        case 2 => 10.5
+        case 3 => 9.2
+        case 4 => 7.9
+        case 5 => 6.8
+        case 6 => 6.2
+        case 7 => 6.5
+        case 8 => 7.4
+        case 9 => 8.7
+        case 10 => 10.0
+        case 11 => 11.2
+        case 12 => 11.8
+
+      } else if (latitude <= 10 & latitude > -10) {
+        9
+      } else { //should never be reached, but can be a universal solution
+        DaylightHoursFAO(date, latitude) - 3
+      }
+
+
+
+
+      val K = 260.5 * (math.max(T12, -1.1) + 1.1) * (100.0 - H12) * dl * math.pow(10, -6)   //260.5 = 4.91 / 3.57 * 1.894 *100
+      return math.max(0.0, predSDMC + K)
+    }
+  }
+
+//
+//  /**
+//   * Computes grass fuel moisture code (canadian index) GFMC
+//   *
+//   * The calculation starts when no snowcover is present.
+//   *
+//   * @param start     start value for initialization
+//   * @param prev      previous day GFMC value
+//   * @param P12       rainfall amount [mm]
+//   * @param T12       temperature at noon (12:00) [C]
+//   * @param H12       relative humidity at noon (12:00) [%]
+//   * @param U12       wind speed at noon (12:00) [m/s]
+//   * @param snowcover snowcover (0/1)
+//   * @return GFMC index value
+//   */
+//  def GFMC(prev: Double, P12: Double, T12: Double, H12: Double, U12: Double, snowcover: Int, start: Double = 85.0): Double = {
+//    if (Null.is(P12) || Null.is(T12) || Null.is(H12) || Null.is(U12) || Null.is(snowcover)) return Double.NaN
+//    if (snowcover == 1) return Double.NaN
+//    else {
+//      val prev_ = if (prev.isNaN) start
+//                  else prev
+//
+//      var m0 = 147.2772 * (101.0 - prev_) / (59.5 + prev_) //grass fuel moisture content from the previous day
+////      val rf = math.max(P12 - 0.5, 0.0) //effective rainfall
+//      val rf = P12
+//      val fuelLoadGrassLayer = 0.3 //kg/m3
+//      var m = Double.NaN //grass fuel moisture content
+//      if (rf > 0) {
+//        //fine fuel moisture content of the current day
+//        var mr = m0 + rf  / fuelLoadGrassLayer * 100
+//        mr = math.min(mr, 250) //grass fuel moisture content of the current day
+//        m0 = mr
+//      }
+//      val Tf = T12 + 35.07 *
+//      val Ed = 0.942 * math.pow(H12, 0.679) + 11 * math.exp((H12 - 100) / 10) + 0.18 * (21.1 - T12) * (1 - math.exp(-0.115 * H12)) //fine fuel equilibrium moisture content for drying phases
+//      if (m0 > Ed) {
+//        val k0 = 0.424 * (1 - math.pow(H12 / 100, 1.7)) + 0.0694 * math.pow(U12 * 3.6, 0.5) * (1 - math.pow(H12 / 100, 8))
+//        val kd = k0 * 0.581 * math.exp(0.0365 * T12) //log drying rate
+//        m = Ed + (m0 - Ed) * math.pow(10, -kd) //fine fuel moisture content
+//      } else if (m0 < Ed) {
+//        val Ew = 0.618 * math.pow(H12, 0.753) + 10 * math.exp((H12 - 100) / 10) + 0.18 * (21.1 - T12) * (1 - math.exp(-0.115 * H12)) //fine fuel equilibrium moisture content for wetting phases
+//        if (Ew > m0) {
+//          val k1 = 0.424 * (1 - math.pow((100 - H12) / 100, 1.7)) + 0.0694 * math.pow(U12 * 3.6, 0.5) * (1 - math.pow((100 - H12) / 100, 8))
+//          val kw = k1 * 0.581 * math.exp(0.0365 * T12) //log wetting rate
+//          m = Ew - (Ew - m0) * math.pow(10, -kw) //fine fuel moisture content
+//        } else {
+//          m = m0 //fine fuel moisture content
+//        }
+//      } else { //m0=Ed
+//        m = m0
+//      }
+//      return 59.5 * (250 - m) / (147.2 + m) //*T12/T12
+//    }
+//  }
+
+
   /**
    * Computes Baumgartner index
    * 

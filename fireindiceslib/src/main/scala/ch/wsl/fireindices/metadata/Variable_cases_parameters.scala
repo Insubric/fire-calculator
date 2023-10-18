@@ -19,8 +19,9 @@ import ch.wsl.fireindices.log.DataLog
   case object RainyWeekThreshold extends Variable("Minimum weekly rainfall for soil saturation","RainyWeekThreshold","",0,1000, classOf[Double])//120.0 //mm
   
   case object FFMCstart extends Variable("Initial FFMC","FFMCstart","--",0,100, classOf[Double]) //85
-  case object DMCstart extends Variable("Initial DMC","DMCstart","--",0,100, classOf[Double])  //5
+  case object DMCstart extends Variable("Initial DMC","DMCstart","--",0,100, classOf[Double])  //6
   case object DCstart extends Variable("Initial  DC","DCstart","--",0,100, classOf[Double])  //15
+  case object SDMCstart extends Variable("Initial SDMC","SDMCstart","--",0,100, classOf[Double])  //12
   case object FireSeasonStart extends Variable("Begin of the fire season","FireSeasonStart","day-month",-3600000L,31622400000L, classOf[Long])   // Utils.solarDateToLong("0215", "MMdd")
   case object FireSeasonEnd extends Variable("End of the fire season","FireSeasonEnd","day-month",-3600000L,31622400000L, classOf[Long])  //Utils.solarDateToLong("0930", "MMdd")
   case object M68VegCorrStep3Start extends Variable("Begin of Step 3","M68VegCorrStep3Start","--",-3600000L,31622400000L, classOf[Long])  // Utils.solarDateToLong("0810", "MMdd")

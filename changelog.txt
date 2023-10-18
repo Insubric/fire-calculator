@@ -1,4 +1,7 @@
 Fire Weather Index Calculator
+- version 2.01 (10.05.2023)
+    * upgraded to scala 2.13.12
+    * added SDMC index (sheltered duff moisture code of the Canadian system)
 
 - version 2.00 (05.10.2022)
 	* upgraded to scala 2.13.9 (replaced MutableList with ListBuffer)

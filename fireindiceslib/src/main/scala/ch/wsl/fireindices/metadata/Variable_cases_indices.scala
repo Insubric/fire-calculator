@@ -1347,7 +1347,103 @@ case object OrieuxDanger extends Variable("Orieux Danger classes","OrieuxDanger"
       me.updateLastAndNotes(calculate(v.ds(BUI_lat,1),v.ds(ISI,1), this.getLog(v)))
     }
   }
-  
+
+case object SDMC extends Variable("Duff moisture code", "DMC", "--", -100000, 100000, classOf[Double]) with Serie with Calculable {
+  in += (T12 :: T13 :: T15 :: T :: Nil)
+  in += (H12 :: H13 :: H15 :: H :: Nil)
+  in += (P12 :: P13 :: P15 :: P :: Nil)
+  in += (SnowCover :: Nil)
+  in += DMCstart :: Nil
+  //in += Latitude::Nil   #currently not used, since also DC should be adapted for daylight and no standard definition exists
+
+  /**
+   * Calculate SDMC index DataSerie
+   *
+   * @param start     to initialize index (generally 6)
+   * @param prev      previous value of SDMC index
+   * @param P12       precipitations at noon DataSerie
+   * @param T12       temperature at noon DataSerie
+   * @param U12       wind speed at noon DataSerie
+   * @param snowcover DataSerie > snowcover DataSerie
+   * @param notes     some notes on DataSerie creation
+   * @return DataSerie
+   */
+  def calculate(start: Double = 6, prev: Double, P12: DataSerie, T12: DataSerie, H12: DataSerie, SnowCover: DataSerie, latitude: Double = Double.NaN, log: DataLog, notes: String = ""): DataSerie = {
+    createDataSerie(P12.start, P12.interval, ListFunctions.applyFunctionPrev_kk(Functions.SDMC, prev, P12.getDates, P12.values, T12.values, H12.values, SnowCover.values.map(_.toInt), latitude, start), log, "start = " + prev + " " + notes)
+  }
+
+  /**
+   * launch calculate on DataCollection with a previous val
+   *
+   * @param prev previous value of index
+   * @param dss  DataCollection > all DataSeries
+   * @return DataSerie
+   */
+  def calculate(prev: Double, dss: DataCollection): DataSerie = {
+    val v = chooseVariablesAndCalculate(dss)
+    //calculate(v.par(DMCstart).value,prev,v.ds(P12),v.ds(T12),v.ds(H12),v.ds(SnowCover), v.par(Latitude).value, this.getLog(v))
+    calculate(v.par(SDMCstart).value, prev, v.ds(P12), v.ds(T12), v.ds(H12), v.ds(SnowCover), Double.NaN, this.getLog(v))
+  }
+
+  def calculate(dss: DataCollection): DataSerie = {
+    calculate(Double.NaN, dss)
+  }
+
+  def complete(dss: DataCollection): DataSerie = {
+    val v = chooseVariablesAndComplete(dss)
+    //calculate(v.par(DMCstart).value, me.prev.asInstanceOf[Double] ,v.ds(P12,1),v.ds(T12,1),v.ds(H12,1),v.ds(SnowCover,1), v.par(Latitude).value, this.getLog(v))
+    val me = dss.dss(this)
+    me.updateLastAndNotes(calculate(v.par(SDMCstart).value, me.prev.asInstanceOf[Double], v.ds(P12, 1), v.ds(T12, 1), v.ds(H12, 1), v.ds(SnowCover, 1), Double.NaN, this.getLog(v)))
+  }
+}
+
+case object SDMC_lat extends Variable("Duff moisture code adapted for latitude", "DMC_lat", "--", -100000, 100000, classOf[Double]) with Serie with Calculable {
+  in += (T12 :: T13 :: T15 :: T :: Nil)
+  in += (H12 :: H13 :: H15 :: H :: Nil)
+  in += (P12 :: P13 :: P15 :: P :: Nil)
+  in += (SnowCover :: Nil)
+  in += DMCstart :: Nil
+  in += Latitude :: Nil
+
+  /**
+   * Calculate SDMC index DataSerie
+   *
+   * @param start     to initialize index (generally 6)
+   * @param prev      previous value of SDMC index
+   * @param P12       precipitations at noon DataSerie
+   * @param T12       temperature at noon DataSerie
+   * @param U12       wind speed at noon DataSerie
+   * @param snowcover DataSerie > snowcover DataSerie
+   * @param latitude  latitude of measurement location to calculate the daylight factor
+   * @param notes     some notes on DataSerie creation
+   * @return DataSerie
+   */
+  def calculate(start: Double = 6, prev: Double, P12: DataSerie, T12: DataSerie, H12: DataSerie, SnowCover: DataSerie, latitude: Double = Double.NaN, log: DataLog, notes: String = ""): DataSerie = {
+    createDataSerie(P12.start, P12.interval, ListFunctions.applyFunctionPrev_kk(Functions.SDMC, prev, P12.getDates, P12.values, T12.values, H12.values, SnowCover.values.map(_.toInt), latitude, start), log, "start = " + prev + " " + notes)
+  }
+
+  /**
+   * launch calculate on DataCollection with a previous val
+   *
+   * @param prev previous value of index
+   * @param dss  DataCollection > all DataSeries
+   * @return DataSerie
+   */
+  def calculate(prev: Double, dss: DataCollection): DataSerie = {
+    val v = chooseVariablesAndCalculate(dss)
+    calculate(v.par(SDMCstart).value, prev, v.ds(P12), v.ds(T12), v.ds(H12), v.ds(SnowCover), v.par(Latitude).value, this.getLog(v))
+  }
+
+  def calculate(dss: DataCollection): DataSerie = {
+    calculate(Double.NaN, dss)
+  }
+
+  def complete(dss: DataCollection): DataSerie = {
+    val v = chooseVariablesAndComplete(dss)
+    val me = dss.dss(this)
+    me.updateLastAndNotes(calculate(v.par(SDMCstart).value, me.prev.asInstanceOf[Double], v.ds(P12, 1), v.ds(T12, 1), v.ds(H12, 1), v.ds(SnowCover, 1), v.par(Latitude).value, this.getLog(v)))
+  }
+}
   case object Baumgartner extends Variable("Baumgartner index","Baumgartner","--",-100000,100000, classOf[Double]) with Serie with Calculable{
     in += (P::P12::P13::P15::Nil)
     in += (PETpen::Nil)

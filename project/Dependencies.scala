@@ -14,7 +14,8 @@ object Dependencies {
 //                            "javax.transaction" % "jta" % "1.1"
   val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5"
   val logback      = "ch.qos.logback" % "logback-classic" % "1.3.3"    //1.4.x does not work with java 8
-  val scalatest	= "org.scalatest" %% "scalatest" % "3.2.14"
+//  val scalactic	= "org.scalatest" %% "scalactic" % "3.2.17"
+  val scalatest	= "org.scalatest" %% "scalatest" % "3.2.17" % Test
 
   val scalaSwing = "org.scala-lang.modules" %% "scala-swing" % "3.0.0"
   val miglayout  = "com.miglayout" % "miglayout-swing" % "5.2"
@@ -23,7 +24,7 @@ object Dependencies {
 
   // Projects
   val fireindiceslibDeps =
-    Seq(arm, scallop, csvjdbc, scalaLogging, logback, scalatest % Test)
+    Seq(arm, scallop, csvjdbc, scalaLogging, logback, scalatest)
 //  Seq(arm, scallop, csvjdbc, liftJson, scalaLogging, logback, scalatest % Test)
 
   val fireindicesuiDeps = fireindiceslibDeps ++ Seq(scalaSwing, miglayout)

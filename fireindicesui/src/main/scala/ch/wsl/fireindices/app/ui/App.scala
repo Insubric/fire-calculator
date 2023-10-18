@@ -191,6 +191,7 @@ object App extends SimpleSwingApplication {
     val ffldFFMCstart = addStandardDoubleField(mpS, FFMCstart, false, true)
     val ffldDMCstart = addStandardDoubleField(mpS, DMCstart, false, true)
     val ffldDCstart = addStandardDoubleField(mpS, DCstart, false, true)
+    val ffldSDMCstart = addStandardDoubleField(mpS, SDMCstart, false, true)
     mpS.add(new Label("(to initialize index)"),"wrap 20")
 
     addSeparator(mpS,"Risico")
@@ -634,6 +635,7 @@ object App extends SimpleSwingApplication {
         parMap += (FFMCstart -> ffldFFMCstart)
         parMap += (DMCstart -> ffldDMCstart)
         parMap += (DCstart -> ffldDCstart)
+        parMap += (SDMCstart -> ffldSDMCstart)
         parMap += (Risico_v0 -> ffldRisico_v0)
         parMap += (Risico_d0 -> ffldRisico_d0)
         parMap += (Risico_d1 -> ffldRisico_d1)

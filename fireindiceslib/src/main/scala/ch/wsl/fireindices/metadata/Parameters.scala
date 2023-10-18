@@ -192,6 +192,7 @@ object Parameters {
                 FFMCstart -> 85.0,
                 DMCstart -> 6.0,
                 DCstart -> 15.0,
+                SDMCstart -> 12.0,
                 Climate -> 3,
                 FireSeasonStart ->  Utils.solarDate2Long("15.02","dd.MM"),
                 FireSeasonEnd ->  Utils.solarDate2Long("30.09","dd.MM"),
