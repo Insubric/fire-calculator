@@ -17,3 +17,5 @@ project/plugins/project/
 .worksheet
 
 .classpath_nb
+.idea
+.bsp
