@@ -12,8 +12,9 @@ import ch.wsl.fireindices.metadata.Serie
 import ch.wsl.fireindices.metadata.Variable
 import ch.wsl.fireindices.metadata._
 import ch.wsl.fireindices.ImplicitConversions._
-
+import ch.wsl.fireindices.model.FCHeader
 import com.typesafe.scalalogging.LazyLogging
+
 import java.io.File
 import java.sql._
 import scala.collection.mutable.LinkedHashMap
@@ -42,8 +43,8 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
    * @param  inputFile the input file
    * @return           the headers String
    */
-  def readHeadersFile(inputFile:File, report:ReportLog = new ReportLog):Boolean={
-     try{
+  def readHeadersFile(inputFile:File, report:ReportLog = new ReportLog):FCHeader={
+     val opt = try{
       // load the driver into memory
       Class.forName("org.relique.jdbc.csv.CsvDriver")
 
@@ -56,20 +57,23 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
       val rs:ResultSet = stmt.executeQuery("SELECT * FROM "+inputFile.getName.substring(0, inputFile.getName.length-4))
 
 
-     readHeaders(rs, report)   
+     val result = readHeaders(rs, report)
 
       //clean up
       rs.close()
       stmt.close()
       conn.close()
+       result
     }
     catch{
       case e:Exception => {
                             logger.error("ERROR: opening file connection  => " + e +"\n" + e.getStackTrace.map(_.toString).mkString("\n"))
 //                            report.append("Problems while reading headers")
+        None
       } 
     }
-    dt != null //& (headers.length==(nrcols-1))
+    opt.getOrElse(FCHeader.empty)
+
   }
   
   
@@ -80,12 +84,11 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
    * @param  settings  Parameters > the parameters (to check if all data are needed)
    * @param  dateSTART a string with first date of needed data
    * @param  dateEND   a string with last date of needed data
-   * @param  dtformat  String for SimpleDateFormat to parse the dates
    * @return           a string with a report of the reading routine (for logs)
    */
-  def readDataFile(inputFile:File, settings:Parameters,                        // [A] is just to help the compiler for Variable[types]
+  def readDataFile(headers:FCHeader,inputFile:File, settings:Parameters,                        // [A] is just to help the compiler for Variable[types]
                   dateSTART:Option[String]=None,
-                  dateEND:Option[String]=None, dtformat:String = dt.unit):String={
+                  dateEND:Option[String]=None):DataCollection={
  
     this.inputFile = inputFile 
     logFileName = new File(inputFile.getParent+"/"+inputFile.getName.substring(0, inputFile.getName.length-4)+"_LOG.txt")
@@ -101,17 +104,20 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
         // Select the ID and NAME columns from sample.csv
         val rs:ResultSet = stmt.executeQuery("SELECT * FROM "+inputFile.getName.substring(0, inputFile.getName.length-4))
 
-        readData(rs, settings, dateSTART, dateEND, dtformat)
+        val data = readData(headers,rs, settings, dateSTART, dateEND)
 
         //clean up
         rs.close()
         stmt.close()
         conn.close()
+
+        data
         
     }catch{
         case e:Exception => logger.error("ERROR: opening file connection => " + e + "\n"+ e.getStackTrace.map(_.toString).mkString("\n"))
+        new DataCollection()
     }
-     ""           
+
   }
 
 
@@ -121,30 +127,32 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
    * @param  Settings Parameter > all parameters needed for calculation
    * @return          report of calculation (for logs)
    */
-  def calculateFile(settings:Parameters, report: ReportLog=new ReportLog(), vars:Seq[Variable with Calculable]=null):File={
+  def calculateFile(dc:DataCollection,settings:Parameters, report: ReportLog=new ReportLog(), vars:Seq[Variable with Calculable]=null):File={
 
-    calculate(settings, report, vars)
-
-
-    var outFilePath=""
-    val outputTABLE:List[StringDataSerie] =
-      dcAliens.values.map(_.crop(dc.dss.head._2.start, dc.dss.head._2.values.length)).toList :::
-        dc.dss.ordered.map(_._2.getStringDataSerie).toList
-
-
-    outFilePath = inputFile.getParent+"/"+inputFile.getName.substring(0, inputFile.getName.length-4)+"_RESULT.csv"
-    val fileout = new java.io.FileWriter(outFilePath)
-
-    try{
-
-      printTable(DsDate, outputTABLE, ",",fileout,true)
-
-    }catch{
-      case e:Exception => logger.error("ERROR: DATA OUTPUT FILE=> " + e + "\n"+ e.getStackTrace.map(_.toString).mkString("\n"))
-    }finally{
-      fileout.close
+    Timer.mesure("SimpleApp - Calculate") {
+      calculate(dc,settings, report, vars)
     }
 
+    var outFilePath=""
+    Timer.mesure("SimpleApp - Write file") {
+      val outputTABLE: List[StringDataSerie] =
+        dcAliens.values.map(_.crop(dc.dss.head._2.start, dc.dss.head._2.values.length)).toList :::
+          dc.dss.ordered.map(_._2.getStringDataSerie).toList
+
+
+      outFilePath = inputFile.getParent + "/" + inputFile.getName.substring(0, inputFile.getName.length - 4) + "_RESULT.csv"
+      val fileout = new java.io.FileWriter(outFilePath)
+
+      try {
+
+        printTable(DsDate, outputTABLE, ",", fileout, true)
+
+      } catch {
+        case e: Exception => logger.error("ERROR: DATA OUTPUT FILE=> " + e + "\n" + e.getStackTrace.map(_.toString).mkString("\n"))
+      } finally {
+        fileout.close
+      }
+    }
     return new File(outFilePath)
   }
 
@@ -155,11 +163,11 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
    * @param  Settings Parameter > all parameters needed for calculation
    * @return          report of calculation (for logs)
    */
-  def completeFile(settings:Parameters, report: ReportLog=new ReportLog, vars2complete:Seq[Serie with Calculable]=null, vars2calculate:Seq[Serie with Calculable]=null, printOnlyLast:Boolean = true):File={
+  def completeFile(_dc:DataCollection,settings:Parameters, report: ReportLog=new ReportLog, vars2complete:Seq[Serie with Calculable]=null, vars2calculate:Seq[Serie with Calculable]=null, printOnlyLast:Boolean = true):File={
 
-    calculate(settings, report, vars2calculate)
+    val dc = calculate(_dc,settings, report, vars2calculate)
 //    if (vars2calculate!= null) calculate(settings, report, vars2calculate)
-    complete(settings, report, vars2complete, printOnlyLast)
+    complete(dc, settings, report, vars2complete, printOnlyLast)
 
     var outFilePath=""
 
@@ -200,34 +208,42 @@ class SimpleApp4CSV  extends SimpleApp4DB () {
    * @param  Settings Parameter > all parameters needed for calculation
    * @return          report of calculation (for logs)
    */
-  def replaceFile(settings:Parameters, nr2replace: Int, vars:Seq[Serie with Calculable]=null, varsToSkip:Seq[Serie]=null,
+  def replaceFile(_dc:DataCollection,settings:Parameters, nr2replace: Int, vars:Seq[Serie with Calculable]=null, varsToSkip:Seq[Serie]=null,
                   vars2calculate:Seq[Serie with Calculable]=null, report: ReportLog=new ReportLog, printOnlyLast:Boolean = true):File={
 
-    calculate(settings, report, vars2calculate)
+    val dc = Timer.mesure("SimpleAPP - Calculate") {
+      calculate(_dc,settings, report, vars2calculate)
+    }
 
-    replace(settings, nr2replace, vars, varsToSkip, report)
-         
-    val outFilePath = inputFile.getParent+"/"+inputFile.getName.substring(0, inputFile.getName.length-4)+"_RESULT.csv"
-    
-    val outputTABLE = if (printOnlyLast) {
-//                              dcAliens.map(_._2.lastDs()).toList ::: dc.dss.ordered.map(x => x._2.lastDs().getStringDataSerie).toList
-                                dcAliens.map(_._2.lastDs()).toList ::: 
-                                dc.dss.ordered.map(x => x._2.lastDs().getStringDataSerie).toList
-                      }else{
-//                                dcAliens.values.toList ::: dc.dss.ordered.map(_._2.getStringDataSerie).toList
-                                dcAliens.values.map(_.crop(dc.dss.head._2.start, dc.dss.head._2.values.length)).toList ::: 
-                                dc.dss.ordered.map(_._2.getStringDataSerie).toList
-                      }
-		
-    val fileout = new java.io.FileWriter(outFilePath)
-    
-    try{
-      printTable(DsDate, outputTABLE, ",",fileout,true)
+    Timer.mesure("SimpleAPP - Replace") {
+      replace(dc, settings, nr2replace, vars, varsToSkip, report)
+    }
 
-    }catch{
-      case e:Exception => logger.error("ERROR: DATA OUTPUT FILE=> " + e + "\n"+ e.getStackTrace.map(_.toString).mkString("\n"))
-    }finally{
-      fileout.close
+    val outFilePath = Timer.mesure("SimpleAPP - Write to file") {
+      val outFilePath = inputFile.getParent + "/" + inputFile.getName.substring(0, inputFile.getName.length - 4) + "_RESULT.csv"
+
+      val outputTABLE = if (printOnlyLast) {
+        //                              dcAliens.map(_._2.lastDs()).toList ::: dc.dss.ordered.map(x => x._2.lastDs().getStringDataSerie).toList
+        dcAliens.map(_._2.lastDs()).toList :::
+          dc.dss.ordered.map(x => x._2.lastDs().getStringDataSerie).toList
+      } else {
+        //                                dcAliens.values.toList ::: dc.dss.ordered.map(_._2.getStringDataSerie).toList
+        dcAliens.values.map(_.crop(dc.dss.head._2.start, dc.dss.head._2.values.length)).toList :::
+          dc.dss.ordered.map(_._2.getStringDataSerie).toList
+      }
+
+      val fileout = new java.io.FileWriter(outFilePath)
+
+
+      try {
+        printTable(DsDate, outputTABLE, ",", fileout, true)
+
+      } catch {
+        case e: Exception => logger.error("ERROR: DATA OUTPUT FILE=> " + e + "\n" + e.getStackTrace.map(_.toString).mkString("\n"))
+      } finally {
+        fileout.close
+      }
+      outFilePath
     }
 
 

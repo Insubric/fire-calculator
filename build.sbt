@@ -8,8 +8,8 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = (project in file(".")).
-  dependsOn(fireindiceslib, fireindicesui).
-  aggregate(fireindiceslib, fireindicesui).
+  dependsOn(fireindiceslib).
+  aggregate(fireindiceslib).
   settings(commonSettings: _*).
   settings(
     name := "firecalculator",
@@ -35,12 +35,18 @@ lazy val fireindiceslib = project.in(file("fireindiceslib")).
     Proguard / proguardOptions += "-keep public class org.slf4j.** { *;}",
     Proguard / proguardOptions += "-keep public class org.relique.jdbc.csv.* {public protected *;}",
 //    Proguard / proguardOptions += "-keep class ch.wsl.fireindices.log.* { *; }",
+    Proguard / proguardOptions += "-keep class  com.typesafe.** { *; }",
     Proguard / proguardOptions += "-keep class ch.wsl.fireindices.** { *; }",
     Proguard / proguardOptions += "-keep class scala.** { *; }",
 
     Proguard / proguardMergeStrategies  += ProguardMerge.first("META-INF/MANIFEST.MF"),
 
     Proguard / proguardInputFilter := { file => None },
+
+    ThisBuild / assemblyMergeStrategy  := {
+      case PathList("META-INF", _*) => MergeStrategy.discard
+      case _                        => MergeStrategy.first
+    }
 
 //    ThisBuild / assemblyMergeStrategy  := {
 //      case PathList("module-info.class") => MergeStrategy.discard
@@ -51,24 +57,24 @@ lazy val fireindiceslib = project.in(file("fireindiceslib")).
 //    }
   )
 
-lazy val fireindicesui = project.dependsOn(fireindiceslib).
-  settings(commonSettings: _*).
-  settings(
-    libraryDependencies ++= fireindicesuiDeps,
-    Proguard / unmanagedJars := (baseDirectory.value ** "*.jar").classpath,
-    Proguard/proguard/javaOptions := Seq("-Xmx4g"),
-    Proguard / proguardOptions ++= Seq("-dontnote", "-dontwarn",  "-ignorewarnings", "-dontoptimize"),
-    Proguard / proguardOptions += "-keep class ch.qos.logback.** { *; }",
-    Proguard / proguardOptions += "-keep public class org.slf4j.** { *;}",
-//    Proguard / proguardOptions += "-keep class ch.wsl.fireindices.log.* { *; }",
-    Proguard / proguardOptions += "-keep class ch.wsl.fireindices.** { *; }",
-    Proguard / proguardOptions += "-keep class scala.** { *; }",
-
-    Proguard / proguardMergeStrategies += ProguardMerge.discard("META-INF/.*".r),
-
-    Proguard / proguardInputFilter := { file => None }
-
-  )
+//lazy val fireindicesui = project.dependsOn(fireindiceslib).
+//  settings(commonSettings: _*).
+//  settings(
+//    libraryDependencies ++= fireindicesuiDeps,
+//    Proguard / unmanagedJars := (baseDirectory.value ** "*.jar").classpath,
+//    Proguard/proguard/javaOptions := Seq("-Xmx4g"),
+//    Proguard / proguardOptions ++= Seq("-dontnote", "-dontwarn",  "-ignorewarnings", "-dontoptimize"),
+//    Proguard / proguardOptions += "-keep class ch.qos.logback.** { *; }",
+//    Proguard / proguardOptions += "-keep public class org.slf4j.** { *;}",
+////    Proguard / proguardOptions += "-keep class ch.wsl.fireindices.log.* { *; }",
+//    Proguard / proguardOptions += "-keep class ch.wsl.fireindices.** { *; }",
+//    Proguard / proguardOptions += "-keep class scala.** { *; }",
+//
+//    Proguard / proguardMergeStrategies += ProguardMerge.discard("META-INF/.*".r),
+//
+//    Proguard / proguardInputFilter := { file => None }
+//
+//  )
 
   
   
@@ -118,6 +124,8 @@ Proguard / proguardOptions += ProguardOptions.keepMain("ch.wsl.fireindices.app.L
 Proguard / proguardOptions += "-keep public class org.relique.jdbc.csv.* {public protected *;}"
 
 Proguard / proguardOptions += "-keep class ch.qos.logback.** { *; }"
+
+Proguard / proguardOptions += "-keep class  com.typesafe.** { *; }"
 
 Proguard / proguardOptions += "-keep public class org.slf4j.** { *;}"
 

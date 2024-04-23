@@ -7,19 +7,20 @@
 package ch.wsl.fireindices
 
 
-import org.scalatest._
-import org.scalatest.matchers._
+
 
 import java.io.File
 import java.util.Date
 import java.text.SimpleDateFormat
 import ch.wsl.fireindices.app._
-
 import ch.wsl.fireindices.functions._
 import ch.wsl.fireindices.metadata._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+
 import scala.collection.immutable.HashSet
 
-class FunctionsSpec extends WordSpec with Matchers {
+class FunctionsSpec extends AnyWordSpec with Matchers {
 
   "lastRainsum " when{
 

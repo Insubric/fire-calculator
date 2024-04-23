@@ -321,7 +321,7 @@ object App extends SimpleSwingApplication {
                         println(fc.selectedFile)
                         fldFile.text=file.getPath
 //                        reportTEMP.append("File: " + currentFile.getName() + "\n\n")
-                        if (elab.readHeadersFile(file, report)){    //if date column has been recognized
+                        if (elab.readHeadersFile(file, report).isDefined){    //if date column has been recognized
                           printMessage(report.headers.format)
                           printMessage("\nFinding first and last Date...")
 //                          reportTEMP.append("Finding first and last Date...")

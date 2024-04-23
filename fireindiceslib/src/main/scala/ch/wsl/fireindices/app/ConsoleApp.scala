@@ -111,8 +111,8 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
 object ConsoleApp extends LazyLogging {
 
-  def main(args: Array[String]){    
-
+  def main(args: Array[String]){
+        val timer = Timer()
         try{
           val a = new Conf(args)
 
@@ -120,7 +120,7 @@ object ConsoleApp extends LazyLogging {
                 println(Variable.variables.map(_.descJSON).mkString("\n"))
             }else{
 
-              a.input().map { file =>
+              a.input().foreach { file =>
 
                 val ix = if (a.Risico())
                   Risico_dffm :: Risico_WindEffect :: Risico_V :: Risico_FI :: Nil
@@ -173,38 +173,48 @@ object ConsoleApp extends LazyLogging {
                 else List()
 
 
-                elab.readHeadersFile(file, log)
-                elab.readDataFile(file, parameters, a.sdt.toOption, a.edt.toOption)
-                if (!a.nocheck()) elab.check(log)
+                timer.time("Initialization")
 
-                if (a.complete() && a.replace() > 0)
-                  logger.warn("Both complete and replace options have been specified. Replace option will be ignored.")
+                val (header,dc) = Timer.mesure("Read IO"){
+                  val header = elab.readHeadersFile(file, log)
+                  val data = elab.readDataFile(header,file, parameters, a.sdt.toOption, a.edt.toOption)
+                  (header,data)
+                }
 
-                if (!a.nocalc())
-                  if (!a.complete() & a.replace() < 1) {
+                Timer.mesure("Calculate") {
+                  if (!a.nocheck()) elab.check(dc, header, log)
 
-                    if (ix.size == 0) elab.calculateFile(parameters, log)
-                    else elab.calculateFile(parameters, log, ix.asInstanceOf[Seq[Variable with Calculable]])
+                  if (a.complete() && a.replace() > 0)
+                    logger.warn("Both complete and replace options have been specified. Replace option will be ignored.")
 
-                  } else {
+                  if (!a.nocalc())
+                    if (!a.complete() & a.replace() < 1) {
 
-                    val vars2calculate = if (mix.size == 0) null else mix.asInstanceOf[Seq[Serie with Calculable]]
-
-                    if (a.complete()) {
-
-                      if (ix.size == 0) elab.completeFile(parameters, log, null, vars2calculate, a.onlyLast())
-                      else elab.completeFile(parameters, log, ix.asInstanceOf[Seq[Serie with Calculable]], vars2calculate, a.onlyLast())
+                      if (ix.size == 0) elab.calculateFile(dc,parameters, log)
+                      else elab.calculateFile(dc,parameters, log, ix.asInstanceOf[Seq[Variable with Calculable]])
 
                     } else {
-                      //replace
-                      if (ix.size == 0) elab.replaceFile(parameters, a.replace(), null, vars2calculate, vars2calculate, log, a.onlyLast())
-                      else elab.replaceFile(parameters, a.replace(), ix.asInstanceOf[Seq[Serie with Calculable]], null, vars2calculate, log, a.onlyLast())
 
+                      val vars2calculate = if (mix.size == 0) null else mix.asInstanceOf[Seq[Serie with Calculable]]
+
+                      if (a.complete()) {
+
+                        if (ix.size == 0) elab.completeFile(dc,parameters, log, null, vars2calculate, a.onlyLast())
+                        else elab.completeFile(dc,parameters, log, ix.asInstanceOf[Seq[Serie with Calculable]], vars2calculate, a.onlyLast())
+
+                      } else {
+                        //replace
+                        if (ix.size == 0) elab.replaceFile(dc,parameters, a.replace(), null, vars2calculate, vars2calculate, log, a.onlyLast())
+                        else elab.replaceFile(dc,parameters, a.replace(), ix.asInstanceOf[Seq[Serie with Calculable]], null, vars2calculate, log, a.onlyLast())
+
+                      }
                     }
-                  }
 
+                }
 
-                elab.writeLog(log, true, a.jsonlog())
+                Timer.mesure("Write LOG") {
+                  elab.writeLog(log, true, a.jsonlog())
+                }
               }
             } 
 
