@@ -1,14 +1,15 @@
 package ch.wsl.fireindices.app
 
 import ch.wsl.fireindices.log.ReportLog
-import ch.wsl.fireindices.metadata.{DataSerie, Parameter, Parameters, Variable}
+import ch.wsl.fireindices.metadata.{DataCollection, DataSerie, Parameter, Parameters, Variable}
 import ch.wsl.fireindices.model.FCRow
 
 object FireCalculator {
 
   private val app = new SimpleApp {}
 
-  def calculate(headers:Seq[String],parameters:Map[String,Double],data:Seq[FCRow]) = {
+
+  private def action(f: (DataCollection,Parameters,ReportLog) => DataCollection)(headers:Seq[String],parameters:Map[String,Double],data:Seq[FCRow]):(ReportLog,Seq[FCRow]) = {
     val report = ReportLog()
     val params = new Parameters()
 
@@ -21,7 +22,7 @@ object FireCalculator {
     val result =  Timer.mesure() {
       val _headers = app.setHeaders(headers, report)
       val _data = app.setData(_headers.get, data, params)
-      app.calculate(_data, params, report)
+      f(_data, params, report)
     }
     val out = result.map{ r =>
       r._2 match {
@@ -37,5 +38,8 @@ object FireCalculator {
 
     (report,rows)
   }
+
+  def calculate = action((x, y, z) => app.calculate(x, y, z)) _
+  def complete = action((x,y,z) => app.complete(x,y,z)) _
 
 }
