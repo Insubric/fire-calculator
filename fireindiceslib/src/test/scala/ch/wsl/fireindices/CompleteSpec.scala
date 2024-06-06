@@ -47,4 +47,20 @@ class CompleteSpec extends AnyFlatSpec with Matchers {
 
   }
 
+    it should "be completed for 2  rows" in {
+
+
+
+        val (report,outCalculated)  = FireCalculator.calculate(MeteoData.header,MeteoData.parameters,MeteoData.rows.take(1))
+
+        val headers = Seq(MeteoData.header.head) ++ outCalculated.head.variables.keys
+
+        val in = outCalculated ++ MeteoData.rows.drop(1).take(1)
+        val (reportComplete,out)  = FireCalculator.complete(headers,MeteoData.parameters,in)
+
+        out
+
+
+    }
+
 }

@@ -494,7 +494,12 @@ import scala.collection.mutable.ListBuffer
      * @return                   DataSerie
      */
     def calculate(P:DataSerie, log:DataLog, notes:String=""):DataSerie={
-      createDataSerie(P.start,P.interval,ListFunctions.weeklySum(P.values), log, notes)
+      val weeklySum = if(P.length < 6) {
+        ListFunctions.weeklySum(P.values).takeRight(P.length)
+      } else {
+        ListFunctions.weeklySum(P.values)
+      }
+      createDataSerie(P.start,P.interval,weeklySum, log, notes)
     }
 
     def calculate(dss:DataCollection):DataSerie={
@@ -589,7 +594,7 @@ import scala.collection.mutable.ListBuffer
 
 
     def calculate[T](P:DataSerie, log:DataLog, notes:String=""):DataSerie={
-      createDataSerie(P.start,P.interval,ListFunctions.lastRainSum_withThreshold_20days(P.values, 2.0, 20)._1, log, notes)
+      createDataSerie(P.start,P.interval,ListFunctions.lastRainSum_withThreshold_20days(P.values, 2.0, math.min(20,P.length))._1, log, notes)
     }
 
 
@@ -610,7 +615,7 @@ import scala.collection.mutable.ListBuffer
 
 
     def calculate[T](P:DataSerie, log:DataLog, notes:String=""):DataSerie={
-      createDataSerie(P.start, P.interval, ListFunctions.lastRainSum_withThreshold_20days(P.values, 2.0, 20)._2, log, notes)
+      createDataSerie(P.start, P.interval, ListFunctions.lastRainSum_withThreshold_20days(P.values, 2.0, math.min(20,P.length))._2, log, notes)
     }
 
 

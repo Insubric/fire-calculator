@@ -3,12 +3,14 @@ package ch.wsl.fireindices.metadata
 
 import ch.wsl.fireindices.log.DataLog
 import com.typesafe.scalalogging.LazyLogging
-import java.sql.ResultSet
 
+import java.sql.ResultSet
 import ch.wsl.fireindices.functions.Utils._
+
 import scala.collection.mutable.LinkedHashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.immutable.NumericRange
+import scala.util.Try
 
 /**
  * Implementation of a class holding data series (time series), with a definition (variable).
@@ -204,7 +206,7 @@ class DataSerie(override val variable:Serie, var start:Long, var interval:Long, 
    * @return      T
    */
   def prev: Double ={
-    apply(length-2)
+    Try(apply(length-2)).getOrElse(Double.NaN)
   }
   
   

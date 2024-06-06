@@ -52,7 +52,7 @@ trait SimpleApp extends LazyLogging {
     data.foreach { row =>
       for (colName <- headers.defined) {
         val v = Variable.getByAbbrCaseInsensitive(colName).asInstanceOf[Serie]
-        xMap(v).insertOneRow(row.variables(colName))
+        xMap(v).insertOneRow(row.variables.getOrElse(colName,Double.NaN))
       }
 
     }

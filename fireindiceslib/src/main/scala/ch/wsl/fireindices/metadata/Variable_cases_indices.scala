@@ -4,9 +4,10 @@ import ch.wsl.fireindices.functions.Functions
 import ch.wsl.fireindices.functions.ListFunctions
 import ch.wsl.fireindices.functions.Utils
 import ch.wsl.fireindices.ImplicitConversions._
-
 import ch.wsl.fireindices.log.DataLog
+
 import scala.collection.mutable.ListBuffer
+import scala.util.Try
 
 
   case object Nesterov extends Variable("Nesterov index value","Nesterov","--",-100000,100000, classOf[Double]) with Serie with Calculable{
@@ -697,7 +698,7 @@ case object OrieuxDanger extends Variable("Orieux Danger classes","OrieuxDanger"
       val p13=v.ds(P13,4).values
       val sc=v.ds(SnowCover,3).values
       val me=dss.dss(this)
-      me.updateLastAndNotes(calculate(me.prev.asInstanceOf[Double], v.ds(T13,1),v.ds(VPD13,1),v.ds(P13,1),p13(2),p13(1),p13(0),v.ds(SnowCover,1),sc(1),sc(0),v.par(FireSeasonStart).value,v.par(FireSeasonEnd).value, this.getLog(v)))
+      me.updateLastAndNotes(calculate(me.prev.asInstanceOf[Double], v.ds(T13,1),v.ds(VPD13,1),v.ds(P13,1),Try(p13(2)).getOrElse(Double.NaN),p13(1),p13(0),v.ds(SnowCover,1),Try(sc(1).toInt).getOrElse(0),sc(0),v.par(FireSeasonStart).value,v.par(FireSeasonEnd).value, this.getLog(v)))
     }
   }
 
@@ -752,7 +753,7 @@ case object OrieuxDanger extends Variable("Orieux Danger classes","OrieuxDanger"
       val p13=v.ds(P13,4).values
       val sc=v.ds(SnowCover,3).values
       val me=dss.dss(this)
-      me.updateLastAndNotes(calculate(me.prev.asInstanceOf[Double], v.ds(T13,1),v.ds(H13,1),v.ds(P13,1),p13(2),p13(1),p13(0),v.ds(SnowCover,1),sc(1),sc(0),v.par(FireSeasonStart).value,v.par(FireSeasonEnd).value, this.getLog(v)))
+      me.updateLastAndNotes(calculate(me.prev.asInstanceOf[Double], v.ds(T13,1),v.ds(H13,1),v.ds(P13,1),Try(p13(2)).getOrElse(Double.NaN),p13(1),p13(0),v.ds(SnowCover,1),Try(sc(1).toInt).getOrElse(0),sc(0),v.par(FireSeasonStart).value,v.par(FireSeasonEnd).value, this.getLog(v)))
     }
   }
   case object M68 extends Variable("M68 index value","M68","--",-100000,100000, classOf[Double]) with Serie with Calculable{

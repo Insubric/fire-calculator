@@ -51,4 +51,30 @@ class CalculateSpec extends AnyFlatSpec with Matchers {
 
   }
 
+  it should "be calculated for 2  rows" in {
+
+
+    val data = MeteoData.rows.take(2)
+
+    val (report,out)  = FireCalculator.calculate(MeteoData.header,MeteoData.parameters,data)
+
+
+    out
+
+
+  }
+
+  it should "be calculated for a single row" in {
+
+
+    val data = MeteoData.rows.take(1)
+
+    val (report,out)  = FireCalculator.calculate(MeteoData.header,MeteoData.parameters,data)
+
+
+    out
+
+
+  }
+
 }

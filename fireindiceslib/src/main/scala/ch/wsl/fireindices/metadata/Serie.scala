@@ -49,9 +49,10 @@ trait Serie extends Variable {
   def createDataSerieFromDates(dates:List[Long],values:List[Double], log: DataLog, notes:String = ""):DataSerie= 
 		new DataSerie(this,dates.head,dates.tail.head-dates.head, values, log, notes)
               
-  def createDataSerieFromDates(dates:List[Long],values:List[Double]):DataSerie= 
-		new DataSerie(this,dates.head,dates.tail.head-dates.head, values)
-	////if (dates.size >1){
+  def createDataSerieFromDates(dates:List[Long],values:List[Double]):DataSerie= {
+		new DataSerie(this,dates.head,24*60*60*1000, values)
+  }
+  ////if (dates.size >1){
 		//min match{
 		  //case x:Double =>new DataSerie(this,dates.head,dates.tail.head-dates.head,values, notes)
 		  //case x:Long =>new DataSerie(this,dates.head,dates.tail.head-dates.head,values, notes)
