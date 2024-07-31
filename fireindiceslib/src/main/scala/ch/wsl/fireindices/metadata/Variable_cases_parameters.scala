@@ -38,7 +38,7 @@ import ch.wsl.fireindices.log.DataLog
      * @return    Double
      */
     def calculate(P:DataSerie, notes:String=""):Double={
-      val ratioMissing:Double = P.values.filter(_.isNaN).length / P.values.length
+      val ratioMissing:Double = P.values.count(Null.is) / P.values.length
 
       if (ratioMissing < 0.20)
         Functions.meanAnnualRain(P.values)
@@ -75,7 +75,7 @@ import ch.wsl.fireindices.log.DataLog
       var ind = 0.0
       for (month <- List("01","02","03","04","05","06","07","08","09","10","11","12")){
         val monthlyData = T.sliceData("MM",month)
-        ind += math.pow(math.max(0,monthlyData.filterNot(_.isNaN).sum/monthlyData.filterNot(_.isNaN).length)/5, 1.514)    //TODO verify if only for max(0,T)
+        ind += math.pow(math.max(0,monthlyData.filterNot(Null.is).sum/monthlyData.filterNot(Null.is).length)/5, 1.514)    //TODO verify if only for max(0,T)
       }
       new Parameter(I,ind, log, notes)
     }

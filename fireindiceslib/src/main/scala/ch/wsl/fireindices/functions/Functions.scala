@@ -1225,7 +1225,7 @@ object Functions extends LazyLogging{
     if (Null.is(P12) || Null.is(T12) || Null.is(H12) || Null.is(U12) || Null.is(snowcover)) return Double.NaN 
     if (snowcover == 1) return Double.NaN
     else {
-      val prev_ = if (prev.isNaN) start
+      val prev_ = if (Null.is(prev)) start
                     else prev
 
       var m0 = 147.2*(101.0- prev_)/(59.5+ prev_)       //fine fuel moisture content from the previous day
@@ -1234,8 +1234,10 @@ object Functions extends LazyLogging{
       if (rf>0){
         //fine fuel moisture content of the current day
         var mr = m0 + 42.5*rf*math.exp(-100.0/(251-m0))*(1-math.exp(-6.93/rf))
-        if (m0>150) mr += 0.0015*math.pow((m0-150),2)*math.pow(rf,0.5)
-          mr = math.min(mr,250)                       //fine fuel moisture content of the current day
+        if (m0>150) {
+          mr += 0.0015*math.pow((m0-150),2)*math.pow(rf,0.5)
+        }
+        mr = math.min(mr,250)                       //fine fuel moisture content of the current day
         m0 = mr
       }
         val Ed = 0.942*math.pow(H12,0.679)+11*math.exp((H12-100)/10)+0.18*(21.1-T12)*(1-math.exp(-0.115*H12))  //fine fuel equilibrium moisture content for drying phases

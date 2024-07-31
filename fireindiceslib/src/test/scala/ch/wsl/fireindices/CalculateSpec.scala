@@ -3,6 +3,7 @@ package ch.wsl.fireindices
 import ch.wsl.fireindices.app.{FireCalculator, SimpleApp, Timer}
 import ch.wsl.fireindices.fixtures.MeteoData
 import ch.wsl.fireindices.functions.Utils
+import ch.wsl.fireindices.metadata.Null
 import ch.wsl.fireindices.model.FCRow
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -37,9 +38,9 @@ class CalculateSpec extends AnyFlatSpec with Matchers {
         case Some(co) => {
           o.variables.foreach{ case (variable,value) =>
             co.variables.get(variable) match {
-              case Some(v) if Math.abs(v - value) < 0.000000000001 || (v.isNaN && value.isNaN)  => ()
+              case Some(v) if Math.abs(v - value) < 0.000000000001 || (Null.is(v) && Null.is(value))  => ()
               case Some(v) if v != value => fail(s"$v was not equal to $value for variable $variable at date ${o.date}")
-              case None if value.isNaN => ()
+              case None if Null.is(value) => ()
               case None => fail(s"Didn't found variable $variable in console output")
             }
           }

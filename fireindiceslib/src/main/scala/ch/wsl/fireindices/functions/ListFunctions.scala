@@ -485,7 +485,7 @@ object ListFunctions {
         val p = P(i)/10.0      //to transform mm/d to cm/d
         val pet = PET(i)/10.0  //to transform mm/d to cm/d
         
-        if (soilWater.isNaN & WeeklyRain(i)>=PweekThreshold) soilWater=soilWaterStart
+        if (Null.is(soilWater) & WeeklyRain(i)>=PweekThreshold) soilWater=soilWaterStart
 
         HER = p + PUprev                                    //acqua evapotraspirabile realmente presente nel terreno
         TP = pet - HER                                      //traspirazione potenziale
@@ -593,9 +593,9 @@ object ListFunctions {
    */
   def gapFillwithPrev (MaxNullGap: Double, list:List[Double]):List[Double] = {
     if (list.isEmpty) Nil
-    else if (list.head.isNaN || list.tail.isEmpty || !list.tail.head.isNaN) list.head::gapFillwithPrev(MaxNullGap,list.tail)
+    else if (Null.is(list.head) || list.tail.isEmpty || !Null.is(list.tail.head)) list.head::gapFillwithPrev(MaxNullGap,list.tail)
     else{
-       val t = list.tail.span(_.isNaN)
+       val t = list.tail.span(Null.is)
        if (t._1.length>MaxNullGap) list.head::t._1:::t._2
        else{
          val l=addPrevElement(list.head,t._1.length)
@@ -609,9 +609,9 @@ object ListFunctions {
    */
   def gapLinearization (MaxNullGap: Double, list:List[Double]):List[Double] = {
     if (list.isEmpty) Nil
-    else if (list.head.isNaN || list.tail.isEmpty || !list.tail.head.isNaN) list.head::gapLinearization(MaxNullGap,list.tail)
+    else if (Null.is(list.head) || list.tail.isEmpty || !Null.is(list.tail.head)) list.head::gapLinearization(MaxNullGap,list.tail)
     else{
-       val t = list.tail.span(_.isNaN)
+       val t = list.tail.span(Null.is)
        if (t._1.length>MaxNullGap) list.head::t._1:::t._2
        else{
          val l=addLinElement2(list.head,(t._2.head-list.head)/(t._1.length+1),t._2.head)   //NonFunzionante

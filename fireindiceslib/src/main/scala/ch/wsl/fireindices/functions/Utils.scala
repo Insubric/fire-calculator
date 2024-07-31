@@ -1,7 +1,9 @@
 package ch.wsl.fireindices.functions
 
 import ch.wsl.fireindices.metadata.Null
+
 import java.text.SimpleDateFormat
+import java.time.{Instant, LocalDate, ZoneId, ZoneOffset}
 import java.util.Date
 
 /**
@@ -115,6 +117,10 @@ object Utils {
       tmp.getTime + sdf.getTimeZone.getDSTSavings
     else
       tmp.getTime
+  }
+
+  def longDate2LocalDate(instant:Long):LocalDate = {
+    Instant.ofEpochMilli(instant).atOffset(ZoneOffset.ofHours(1)).toLocalDate
   }
   
   /**
